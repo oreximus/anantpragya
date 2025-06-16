@@ -11,7 +11,7 @@ export default function Navbar() {
 
   const navItems = [
     { href: "/", label: "मुख्य पृष्ठ", en: "Home" },
-    { href: "/posts", label: "ब्लॉग", en: "Blogs" },
+    { href: "/", label: "ब्लॉग", en: "Blogs" },
     { href: "/about", label: "हमारे बारे में", en: "About" },
     { href: "/contact", label: "संपर्क", en: "Contact" },
   ];
@@ -26,16 +26,23 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+          <Link
+            href="/"
+            className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+          >
             <div className="w-10 h-10 bg-gradient-to-br from-saffron-500 to-gold-500 rounded-full flex items-center justify-center">
               <Clover className="text-white w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold font-hindi text-saffron-600">अनंत प्रज्ञा</h1>
-              <p className="text-xs text-terracotta-600 font-english">Infinite Wisdom</p>
+              <h1 className="text-2xl font-bold font-hindi text-saffron-600">
+                अनंत प्रज्ञा
+              </h1>
+              <p className="text-xs text-terracotta-600 font-english">
+                Infinite Wisdom
+              </p>
             </div>
           </Link>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
@@ -53,7 +60,7 @@ export default function Navbar() {
               </Link>
             ))}
           </div>
-          
+
           {/* Right side buttons */}
           <div className="flex items-center space-x-4">
             {/* Search Button */}
@@ -68,7 +75,7 @@ export default function Navbar() {
 
             {/* CMS Button */}
             <Link href="/cms">
-              <Button 
+              <Button
                 size="sm"
                 className="bg-saffron-500 text-white hover:bg-saffron-600 transition-colors"
               >
@@ -80,7 +87,11 @@ export default function Navbar() {
             {/* Mobile Menu */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" className="md:hidden text-saffron-600">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="md:hidden text-saffron-600"
+                >
                   <Menu className="w-5 h-5" />
                 </Button>
               </SheetTrigger>
@@ -97,7 +108,9 @@ export default function Navbar() {
                       }`}
                     >
                       <span className="font-hindi">{item.label}</span>
-                      <span className="text-sm text-gray-500 ml-2">{item.en}</span>
+                      <span className="text-sm text-gray-500 ml-2">
+                        {item.en}
+                      </span>
                     </Link>
                   ))}
                 </div>
