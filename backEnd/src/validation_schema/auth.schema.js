@@ -1,4 +1,4 @@
-const Joi = require("joi")
+const Joi = require("joi");
 
 const registerSchema = Joi.object({
   first_name: Joi.string().min(2).max(50).required().messages({
@@ -25,7 +25,7 @@ const registerSchema = Joi.object({
         "Password must contain at least one lowercase letter, one uppercase letter, one number, and one special character",
       "any.required": "Password is required",
     }),
-})
+});
 
 const loginSchema = Joi.object({
   email: Joi.string().email().required().messages({
@@ -35,13 +35,69 @@ const loginSchema = Joi.object({
   password: Joi.string().required().messages({
     "any.required": "Password is required",
   }),
-})
+});
+
+const verifyEmailSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Please provide a valid email address",
+    "any.required": "Email is required",
+  }),
+  otp: Joi.string()
+    .length(6)
+    .pattern(/^[0-9]+$/)
+    .required()
+    .messages({
+      "string.length": "OTP must be exactly 6 digits",
+      "string.pattern.base": "OTP must contain only numbers",
+      "any.required": "OTP is required",
+    }),
+});
+
+const resendVerificationEmailSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Please provide a valid email address",
+    "any.required": "Email is required",
+  }),
+});
+
+const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Please provide a valid email address",
+    "any.required": "Email is required",
+  }),
+});
+
+const resetPasswordSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    "string.email": "Please provide a valid email address",
+    "any.required": "Email is required",
+  }),
+  otp: Joi.string()
+    .length(6)
+    .pattern(/^[0-9]+$/)
+    .required()
+    .messages({
+      "string.length": "OTP must be exactly 6 digits",
+      "string.pattern.base": "OTP must contain only numbers",
+      "any.required": "OTP is required",
+    }),
+  new_password: Joi.string()
+    .min(8)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/)
+    .required()
+    .messages({
+      "string.min": "New password must be at least 8 characters long",
+      "string.pattern.base":
+        "New password must contain at least one lowercase letter, one uppercase letter, one number, and one special character",
+      "any.required": "New password is required",
+    }),
+});
 
 const updateProfileSchema = Joi.object({
   first_name: Joi.string().min(2).max(50).optional(),
   last_name: Joi.string().min(2).max(50).optional(),
   email: Joi.string().email().optional(),
-})
+});
 
 const changePasswordSchema = Joi.object({
   current_password: Joi.string().required().messages({
@@ -57,11 +113,15 @@ const changePasswordSchema = Joi.object({
         "New password must contain at least one lowercase letter, one uppercase letter, one number, and one special character",
       "any.required": "New password is required",
     }),
-})
+});
 
 module.exports = {
   registerSchema,
   loginSchema,
+  verifyEmailSchema,
+  resendVerificationEmailSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
   updateProfileSchema,
   changePasswordSchema,
-}
+};
