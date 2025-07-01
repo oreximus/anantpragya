@@ -1,19 +1,24 @@
 # Blog API Documentation
 
 ## Base URL
-\`\`\`
+
+```
 http://localhost:5001/api
-\`\`\`
+```
 
 ## Authentication
+
 Most endpoints require authentication using Bearer tokens. Include the token in the Authorization header:
-\`\`\`
+
+```
 Authorization: Bearer <your_access_token>
-\`\`\`
+```
 
 ## Response Format
+
 All API responses follow this format:
-\`\`\`json
+
+```json
 {
   "success": true/false,
   "message": "Response message",
@@ -21,78 +26,91 @@ All API responses follow this format:
   "errors": [], // Validation errors (if any)
   "timestamp": "2025-01-01T00:00:00.000Z"
 }
-\`\`\`
+```
 
 ## Authentication Endpoints
 
 ### 1. Register User
+
 - **POST** `/auth/register`
 - **Public**: Yes
 - **Body**:
-\`\`\`json
+
+```json
 {
   "first_name": "John",
   "last_name": "Doe",
   "email": "john.doe@example.com",
   "password": "Password123!"
 }
-\`\`\`
+```
 
 ### 2. Login User
+
 - **POST** `/auth/login`
 - **Public**: Yes
 - **Body**:
-\`\`\`json
+
+```json
 {
   "email": "john.doe@example.com",
   "password": "Password123!"
 }
-\`\`\`
+```
 
 ### 3. Refresh Token
+
 - **POST** `/auth/refresh-token`
 - **Public**: Yes
 - **Body**:
-\`\`\`json
+
+```json
 {
   "refresh_token": "your_refresh_token"
 }
-\`\`\`
+```
 
 ### 4. Get Profile
+
 - **GET** `/auth/profile`
 - **Auth**: Required
 
 ### 5. Update Profile
+
 - **PUT** `/auth/profile`
 - **Auth**: Required
 - **Body**:
-\`\`\`json
+
+```json
 {
   "first_name": "John Updated",
   "last_name": "Doe Updated",
   "email": "john.updated@example.com"
 }
-\`\`\`
+```
 
 ### 6. Change Password
+
 - **POST** `/auth/change-password`
 - **Auth**: Required
 - **Body**:
-\`\`\`json
+
+```json
 {
   "current_password": "Password123!",
   "new_password": "NewPassword123!"
 }
-\`\`\`
+```
 
 ### 7. Logout
+
 - **POST** `/auth/logout`
 - **Auth**: Required
 
 ## Category Management (Master)
 
 ### 1. Get All Categories
+
 - **GET** `/master/categories`
 - **Public**: Yes
 - **Query Parameters**:
@@ -101,36 +119,43 @@ All API responses follow this format:
   - `search` (optional): Search term
 
 ### 2. Get Category by ID
+
 - **GET** `/master/categories/:id`
 - **Public**: Yes
 
 ### 3. Create Category
+
 - **POST** `/master/categories`
 - **Auth**: Required (Admin only)
 - **Body**:
-\`\`\`json
+
+```json
 {
   "name": "Programming"
 }
-\`\`\`
+```
 
 ### 4. Update Category
+
 - **PUT** `/master/categories/:id`
 - **Auth**: Required (Admin only)
 - **Body**:
-\`\`\`json
+
+```json
 {
   "name": "Software Development"
 }
-\`\`\`
+```
 
 ### 5. Delete Category
+
 - **DELETE** `/master/categories/:id`
 - **Auth**: Required (Admin only)
 
 ## Blog Posts
 
 ### 1. Get All Posts
+
 - **GET** `/blog/posts`
 - **Public**: Yes
 - **Query Parameters**:
@@ -140,40 +165,47 @@ All API responses follow this format:
   - `search` (optional): Search in title, content, tags
 
 ### 2. Get Post by ID
+
 - **GET** `/blog/posts/:id`
 - **Public**: Yes
 
 ### 3. Create Post
+
 - **POST** `/blog/posts`
 - **Auth**: Required
 - **Body**:
-\`\`\`json
+
+```json
 {
   "title": "Introduction to React Hooks",
   "content": "React Hooks are a powerful feature...",
   "category_id": "660e8400-e29b-41d4-a716-446655440000",
   "tags": "react,hooks,javascript,frontend"
 }
-\`\`\`
+```
 
 ### 4. Update Post
+
 - **PUT** `/blog/posts/:id`
 - **Auth**: Required (Owner or Admin)
 - **Body**:
-\`\`\`json
+
+```json
 {
   "title": "Advanced React Hooks Patterns",
   "content": "Updated content...",
   "category_id": "660e8400-e29b-41d4-a716-446655440000",
   "tags": "react,hooks,advanced,patterns"
 }
-\`\`\`
+```
 
 ### 5. Delete Post
+
 - **DELETE** `/blog/posts/:id`
 - **Auth**: Required (Owner or Admin)
 
 ### 6. Get My Posts
+
 - **GET** `/blog/my-posts`
 - **Auth**: Required
 - **Query Parameters**:
@@ -184,18 +216,21 @@ All API responses follow this format:
 ## Post Activities
 
 ### 1. Add Post Activity
+
 - **POST** `/blog/posts/:id/activity`
 - **Auth**: Required
 - **Body**:
-\`\`\`json
+
+```json
 {
   "like_count": 1,
   "comment": "Great article! Very informative.",
   "share_count": 0
 }
-\`\`\`
+```
 
 ### 2. Get Post Activities
+
 - **GET** `/blog/posts/:id/activities`
 - **Public**: Yes
 - **Query Parameters**:
@@ -205,6 +240,7 @@ All API responses follow this format:
 ## Admin Only Endpoints
 
 ### 1. Get All Posts (Admin)
+
 - **GET** `/blog/all-posts`
 - **Auth**: Required (Admin only)
 - **Query Parameters**:
@@ -215,12 +251,14 @@ All API responses follow this format:
   - `search` (optional): Search term
 
 ### 2. Force Delete Post
+
 - **DELETE** `/blog/posts/:id/force`
 - **Auth**: Required (Admin only)
 
 ## Health Check
 
 ### Health Check
+
 - **GET** `/health`
 - **Public**: Yes
 
@@ -238,21 +276,24 @@ All API responses follow this format:
 ## Sample UUIDs for Testing
 
 ### Users
+
 - Admin User: `550e8400-e29b-41d4-a716-446655440000`
 - Regular User: `550e8400-e29b-41d4-a716-446655440001`
 
 ### Categories
+
 - Technology: `660e8400-e29b-41d4-a716-446655440000`
 - Lifestyle: `660e8400-e29b-41d4-a716-446655440001`
 - Travel: `660e8400-e29b-41d4-a716-446655440002`
 
 ### Posts
+
 - Post 1: `770e8400-e29b-41d4-a716-446655440000`
 - Post 2: `770e8400-e29b-41d4-a716-446655440001`
 
 ## Environment Variables Required
 
-\`\`\`env
+```env
 NODE_ENV=development
 PORT=5001
 DB_HOST=localhost
@@ -265,3 +306,4 @@ JWT_EXPIRES_IN=24h
 JWT_REFRESH_EXPIRES_IN=7d
 ALLOWED_ORIGINS=http://localhost:3000
 LOG_LEVEL=info
+```
