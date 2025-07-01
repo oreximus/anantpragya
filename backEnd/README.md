@@ -5,12 +5,14 @@ A comprehensive Node.js/Express.js blog backend API with JWT authentication, rol
 ## Features
 
 - **Authentication & Authorization**
+
   - JWT-based authentication
   - Role-based access control (Admin/User)
   - Password hashing with bcrypt
   - Token refresh mechanism
 
 - **Blog Management**
+
   - Create, read, update, delete posts
   - Category management
   - Post activities (likes, comments, shares)
@@ -18,6 +20,7 @@ A comprehensive Node.js/Express.js blog backend API with JWT authentication, rol
   - Search and pagination
 
 - **Security**
+
   - Helmet for security headers
   - CORS configuration
   - Rate limiting
@@ -31,7 +34,7 @@ A comprehensive Node.js/Express.js blog backend API with JWT authentication, rol
 
 ## Project Structure
 
-\`\`\`
+```
 src/
 ├── config/
 │   ├── database.js          # Database configuration
@@ -66,38 +69,41 @@ src/
     ├── auth.schema.js      # Authentication validation schemas
     ├── blog.schema.js      # Blog validation schemas
     └── master.schema.js    # Master data validation schemas
-\`\`\`
+```
 
 ## Installation
 
 1. Clone the repository
 2. Install dependencies:
 
-\`\`\`bash
+```bash
 npm install express cors helmet express-rate-limit compression morgan bcryptjs jsonwebtoken joi winston sequelize mysql2 uuid cross-env
-\`\`\`
+```
 
 3. Set up environment variables:
+
    - Copy `.env.development` or `.env.production` and configure your database and JWT settings
    - Create a `logs` directory in the project root
 
 4. Set up the database:
+
    - Create a MySQL database
    - Import the provided SQL schema from `database/schema.sql`
 
 5. Start the server:
 
-\`\`\`bash
+```bash
 # Development
 cross-env NODE_ENV=development node server.js
 
 # Production
 cross-env NODE_ENV=production node server.js
-\`\`\`
+```
 
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - User login
 - `POST /api/auth/refresh-token` - Refresh access token
@@ -107,6 +113,7 @@ cross-env NODE_ENV=production node server.js
 - `POST /api/auth/logout` - User logout (Protected)
 
 ### Blog Management
+
 - `GET /api/blog/posts` - Get all posts (Public)
 - `GET /api/blog/posts/:id` - Get post by ID (Public)
 - `POST /api/blog/posts` - Create new post (Protected)
@@ -119,6 +126,7 @@ cross-env NODE_ENV=production node server.js
 - `GET /api/blog/all-posts` - Get all posts for admin (Admin only)
 
 ### Master Data
+
 - `GET /api/master/categories` - Get all categories (Public)
 - `GET /api/master/categories/:id` - Get category by ID (Public)
 - `POST /api/master/categories` - Create category (Admin only)
@@ -128,6 +136,7 @@ cross-env NODE_ENV=production node server.js
 ## Database Schema
 
 The application uses the following main tables:
+
 - `users` - User accounts with role-based access
 - `category` - Blog post categories
 - `post` - Blog posts
@@ -137,6 +146,7 @@ The application uses the following main tables:
 ## Environment Variables
 
 ### Development (.env.development)
+
 - `NODE_ENV=development`
 - `PORT=5000`
 - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`
@@ -145,6 +155,7 @@ The application uses the following main tables:
 - `LOG_LEVEL=debug`
 
 ### Production (.env.production)
+
 - `NODE_ENV=production`
 - Similar to development but with production values
 
@@ -156,6 +167,7 @@ The application uses the following main tables:
 ## Error Handling
 
 The API includes comprehensive error handling with:
+
 - Validation errors
 - Authentication errors
 - Authorization errors
@@ -177,6 +189,7 @@ All errors are logged using Winston and returned in a consistent JSON format.
 ## Logging
 
 Winston logging system with:
+
 - File-based logging (error.log, combined.log)
 - Console logging in development
 - Log rotation (5MB max file size, 5 files max)
