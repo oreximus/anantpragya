@@ -1,0 +1,6 @@
+node_modules/*
+.env.*
+.env
+src.zip
+backEnd.zip
+frontEnd.zip
