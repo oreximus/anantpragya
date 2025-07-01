@@ -1,0 +1,2001 @@
+{
+	"info": {
+		"_postman_id": "0f972ab8-e103-4c61-b546-ff823ceec739",
+		"name": "Blog API Collection - With Email Verification",
+		"description": "Complete API collection for the Blog Backend with Email Verification System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33520907",
+		"_collection_link": "https://oreximus.postman.co/workspace/Retroholics~cbef616c-1531-488d-a427-1bf779db3026/collection/33520907-0f972ab8-e103-4c61-b546-ff823ceec739?action=share&source=collection_link&creator=33520907"
+	},
+	"item": [
+		{
+			"name": "Authentication & Email Verification",
+			"item": [
+				{
+					"name": "1. Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.test('Registration successful', function () {",
+									"        pm.expect(response.success).to.be.true;",
+									"        pm.expect(response.message).to.include('verification');",
+									"    });",
+									"    console.log('✅ User registered successfully. Check email for OTP.');",
+									"} else {",
+									"    console.log('❌ Registration failed:', pm.response.json());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"Password123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user. Email verification required before login."
+					},
+					"response": [
+						{
+							"name": "1. Register User",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"first_name\": \"John\",\n  \"last_name\": \"Doe\",\n  \"email\": \"oreximus@gmail.com\",\n  \"password\": \"Password123!\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/register",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"register"
+									]
+								}
+							},
+							"status": "Created",
+							"code": 201,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Server",
+									"value": "nginx/1.24.0 (Ubuntu)"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 01 Jul 2025 09:45:44 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "503"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "Strict-Transport-Security",
+									"value": "max-age=31536000; includeSubDomains"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-DNS-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin, Accept-Encoding"
+								},
+								{
+									"key": "Access-Control-Allow-Credentials",
+									"value": "true"
+								},
+								{
+									"key": "X-RateLimit-Limit",
+									"value": "100"
+								},
+								{
+									"key": "X-RateLimit-Remaining",
+									"value": "98"
+								},
+								{
+									"key": "X-RateLimit-Reset",
+									"value": "1751364033"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"1f7-+8RMArAT4fDUEAT/RC8/SWBk3H4\""
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Registration successful. Please check your email for verification code.\",\n    \"data\": {\n        \"user\": {\n            \"created_at\": \"2025-07-01T09:45:41.216Z\",\n            \"updated_at\": \"2025-07-01T09:45:41.216Z\",\n            \"is_active\": true,\n            \"is_deleted\": false,\n            \"id\": \"02473138-ee5b-41fc-b026-1486af66fdb6\",\n            \"first_name\": \"John\",\n            \"last_name\": \"Doe\",\n            \"email\": \"oreximus@gmail.com\",\n            \"role\": 1,\n            \"is_email_verified\": false\n        },\n        \"message\": \"Registration successful. Please check your email for verification code.\"\n    },\n    \"timestamp\": \"2025-07-01T09:45:44.391Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "2. Verify Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.test('Email verification successful', function () {",
+									"        pm.expect(response.success).to.be.true;",
+									"        pm.expect(response.message).to.include('verified');",
+									"    });",
+									"    console.log('✅ Email verified successfully. You can now login.');",
+									"} else {",
+									"    console.log('❌ Email verification failed:', pm.response.json());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"otp\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/verify-email",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"verify-email"
+							]
+						},
+						"description": "Verify email address using 6-digit OTP sent to email."
+					},
+					"response": [
+						{
+							"name": "2. Verify Email",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"oreximus@gmail.com\",\n  \"otp\": \"394334\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/verify-email",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"verify-email"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Server",
+									"value": "nginx/1.24.0 (Ubuntu)"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 01 Jul 2025 10:10:24 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "601"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "Strict-Transport-Security",
+									"value": "max-age=31536000; includeSubDomains"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-DNS-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin, Accept-Encoding"
+								},
+								{
+									"key": "Access-Control-Allow-Credentials",
+									"value": "true"
+								},
+								{
+									"key": "X-RateLimit-Limit",
+									"value": "100"
+								},
+								{
+									"key": "X-RateLimit-Remaining",
+									"value": "95"
+								},
+								{
+									"key": "X-RateLimit-Reset",
+									"value": "1751365433"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"259-zzqhFKJDfjRNNSTUL8BXol+D4ZI\""
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Email verified successfully\",\n    \"data\": {\n        \"message\": \"Email verified successfully\",\n        \"user\": {\n            \"id\": \"02473138-ee5b-41fc-b026-1486af66fdb6\",\n            \"first_name\": \"John\",\n            \"last_name\": \"Doe\",\n            \"email\": \"oreximus@gmail.com\",\n            \"role\": 1,\n            \"is_email_verified\": false,\n            \"email_verification_token\": \"394334\",\n            \"email_verification_expires\": \"2025-07-01T10:19:52.000Z\",\n            \"password_reset_token\": null,\n            \"password_reset_expires\": null,\n            \"created_at\": \"2025-07-01T09:45:41.000Z\",\n            \"created_by\": null,\n            \"updated_at\": \"2025-07-01T10:09:52.000Z\",\n            \"updated_by\": null,\n            \"is_active\": true,\n            \"is_deleted\": false\n        }\n    },\n    \"timestamp\": \"2025-07-01T10:10:24.836Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "3. Resend Verification Email",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    console.log('✅ Verification email resent successfully.');",
+									"} else {",
+									"    console.log('❌ Failed to resend verification email:', pm.response.json());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{testEmail}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/resend-verification",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"resend-verification"
+							]
+						},
+						"description": "Resend verification email if OTP expired or not received."
+					},
+					"response": [
+						{
+							"name": "3. Resend Verification Email",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"{{testEmail}}\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/resend-verification",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"resend-verification"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Server",
+									"value": "nginx/1.24.0 (Ubuntu)"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 01 Jul 2025 10:09:55 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "162"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "Strict-Transport-Security",
+									"value": "max-age=31536000; includeSubDomains"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-DNS-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin, Accept-Encoding"
+								},
+								{
+									"key": "Access-Control-Allow-Credentials",
+									"value": "true"
+								},
+								{
+									"key": "X-RateLimit-Limit",
+									"value": "100"
+								},
+								{
+									"key": "X-RateLimit-Remaining",
+									"value": "96"
+								},
+								{
+									"key": "X-RateLimit-Reset",
+									"value": "1751365433"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"a2-qCSeNXEdP+w6sypvUTrmsAQsF2Q\""
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Verification email sent successfully\",\n    \"data\": {\n        \"message\": \"Verification email sent successfully\"\n    },\n    \"timestamp\": \"2025-07-01T10:09:55.477Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "4. Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('accessToken', response.data.access_token);",
+									"    pm.collectionVariables.set('refreshToken', response.data.refresh_token);",
+									"    pm.test('Login successful', function () {",
+									"        pm.expect(response.success).to.be.true;",
+									"        pm.expect(response.data.access_token).to.exist;",
+									"    });",
+									"    console.log('✅ Login successful. Tokens saved.');",
+									"} else if (pm.response.code === 403) {",
+									"    console.log('❌ Email not verified. Please verify your email first.');",
+									"} else {",
+									"    console.log('❌ Login failed:', pm.response.json());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"Password123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with verified email. Returns access and refresh tokens."
+					},
+					"response": [
+						{
+							"name": "4. Login User",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"password\": \"Password123!\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Server",
+									"value": "nginx/1.24.0 (Ubuntu)"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 01 Jul 2025 10:10:50 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Transfer-Encoding",
+									"value": "chunked"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "Strict-Transport-Security",
+									"value": "max-age=31536000; includeSubDomains"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-DNS-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin, Accept-Encoding"
+								},
+								{
+									"key": "Access-Control-Allow-Credentials",
+									"value": "true"
+								},
+								{
+									"key": "X-RateLimit-Limit",
+									"value": "100"
+								},
+								{
+									"key": "X-RateLimit-Remaining",
+									"value": "94"
+								},
+								{
+									"key": "X-RateLimit-Reset",
+									"value": "1751365433"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"40a-spM0HTIdTc0+T05+izi3YpkcI0c\""
+								},
+								{
+									"key": "Content-Encoding",
+									"value": "br"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Login successful\",\n    \"data\": {\n        \"user\": {\n            \"id\": \"02473138-ee5b-41fc-b026-1486af66fdb6\",\n            \"first_name\": \"John\",\n            \"last_name\": \"Doe\",\n            \"email\": \"oreximus@gmail.com\",\n            \"role\": 1,\n            \"is_email_verified\": true,\n            \"email_verification_token\": null,\n            \"email_verification_expires\": null,\n            \"password_reset_token\": null,\n            \"password_reset_expires\": null,\n            \"created_at\": \"2025-07-01T09:45:41.000Z\",\n            \"created_by\": null,\n            \"updated_at\": \"2025-07-01T10:10:21.000Z\",\n            \"updated_by\": null,\n            \"is_active\": true,\n            \"is_deleted\": false\n        },\n        \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAyNDczMTM4LWVlNWItNDFmYy1iMDI2LTE0ODZhZjY2ZmRiNiIsImVtYWlsIjoib3JleGltdXNAZ21haWwuY29tIiwicm9sZSI6MSwiaWF0IjoxNzUxMzY0NjUwLCJleHAiOjE3NTE0NTEwNTB9.CpQHacQ9cmkgFZ4TRT-RfZ18LItIJN_bxTuz6ruNt74\",\n        \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAyNDczMTM4LWVlNWItNDFmYy1iMDI2LTE0ODZhZjY2ZmRiNiIsImVtYWlsIjoib3JleGltdXNAZ21haWwuY29tIiwicm9sZSI6MSwiaWF0IjoxNzUxMzY0NjUwLCJleHAiOjE3NTE5Njk0NTB9.426H2JCrfjwNCddUTZBHiGLrTotFzobTXEpeQHOZKaA\"\n    },\n    \"timestamp\": \"2025-07-01T10:10:50.844Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "5. Forgot Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    console.log('✅ Password reset OTP sent to email.');",
+									"} else {",
+									"    console.log('❌ Failed to send password reset OTP:', pm.response.json());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{testEmail}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/forgot-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"forgot-password"
+							]
+						},
+						"description": "Request password reset. Sends OTP to email."
+					},
+					"response": [
+						{
+							"name": "5. Forgot Password",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"{{testEmail}}\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/forgot-password",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"forgot-password"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Server",
+									"value": "nginx/1.24.0 (Ubuntu)"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 01 Jul 2025 10:14:21 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "166"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "Strict-Transport-Security",
+									"value": "max-age=31536000; includeSubDomains"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-DNS-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin, Accept-Encoding"
+								},
+								{
+									"key": "Access-Control-Allow-Credentials",
+									"value": "true"
+								},
+								{
+									"key": "X-RateLimit-Limit",
+									"value": "100"
+								},
+								{
+									"key": "X-RateLimit-Remaining",
+									"value": "93"
+								},
+								{
+									"key": "X-RateLimit-Reset",
+									"value": "1751365433"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"a6-SiqC8cflzu2Q+ePrIfgUjAyxcdw\""
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Password reset code sent to your email\",\n    \"data\": {\n        \"message\": \"Password reset code sent to your email\"\n    },\n    \"timestamp\": \"2025-07-01T10:14:21.931Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "6. Reset Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    console.log('✅ Password reset successfully.');",
+									"} else {",
+									"    console.log('❌ Password reset failed:', pm.response.json());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"otp\": \"123456\",\n  \"new_password\": \"NewPassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/reset-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"reset-password"
+							]
+						},
+						"description": "Reset password using OTP from email."
+					},
+					"response": [
+						{
+							"name": "6. Reset Password",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"email\": \"{{testEmail}}\",\n  \"otp\": \"730421\",\n  \"new_password\": \"NewPassword123!\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/reset-password",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"reset-password"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Server",
+									"value": "nginx/1.24.0 (Ubuntu)"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 01 Jul 2025 10:15:00 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "144"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "Strict-Transport-Security",
+									"value": "max-age=31536000; includeSubDomains"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-DNS-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin, Accept-Encoding"
+								},
+								{
+									"key": "Access-Control-Allow-Credentials",
+									"value": "true"
+								},
+								{
+									"key": "X-RateLimit-Limit",
+									"value": "100"
+								},
+								{
+									"key": "X-RateLimit-Remaining",
+									"value": "92"
+								},
+								{
+									"key": "X-RateLimit-Reset",
+									"value": "1751365433"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"90-SnypoJWUFCD3kLNBLmjry+V73k8\""
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Password reset successfully\",\n    \"data\": {\n        \"message\": \"Password reset successfully\"\n    },\n    \"timestamp\": \"2025-07-01T10:15:00.447Z\"\n}"
+						}
+					]
+				},
+				{
+					"name": "7. Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('accessToken', response.data.access_token);",
+									"    pm.collectionVariables.set('refreshToken', response.data.refresh_token);",
+									"    console.log('✅ Token refreshed successfully.');",
+									"} else {",
+									"    console.log('❌ Token refresh failed:', pm.response.json());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/refresh-token",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"refresh-token"
+							]
+						},
+						"description": "Refresh access token using refresh token."
+					},
+					"response": [
+						{
+							"name": "7. Refresh Token",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"refresh_token\": \"{{refreshToken}}\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/auth/refresh-token",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"auth",
+										"refresh-token"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Server",
+									"value": "nginx/1.24.0 (Ubuntu)"
+								},
+								{
+									"key": "Date",
+									"value": "Tue, 01 Jul 2025 10:16:25 GMT"
+								},
+								{
+									"key": "Content-Type",
+									"value": "application/json; charset=utf-8"
+								},
+								{
+									"key": "Content-Length",
+									"value": "616"
+								},
+								{
+									"key": "Connection",
+									"value": "keep-alive"
+								},
+								{
+									"key": "Content-Security-Policy",
+									"value": "default-src 'self';base-uri 'self';font-src 'self' https: data:;form-action 'self';frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests"
+								},
+								{
+									"key": "Cross-Origin-Opener-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Cross-Origin-Resource-Policy",
+									"value": "same-origin"
+								},
+								{
+									"key": "Origin-Agent-Cluster",
+									"value": "?1"
+								},
+								{
+									"key": "Referrer-Policy",
+									"value": "no-referrer"
+								},
+								{
+									"key": "Strict-Transport-Security",
+									"value": "max-age=31536000; includeSubDomains"
+								},
+								{
+									"key": "X-Content-Type-Options",
+									"value": "nosniff"
+								},
+								{
+									"key": "X-DNS-Prefetch-Control",
+									"value": "off"
+								},
+								{
+									"key": "X-Download-Options",
+									"value": "noopen"
+								},
+								{
+									"key": "X-Frame-Options",
+									"value": "SAMEORIGIN"
+								},
+								{
+									"key": "X-Permitted-Cross-Domain-Policies",
+									"value": "none"
+								},
+								{
+									"key": "X-XSS-Protection",
+									"value": "0"
+								},
+								{
+									"key": "Vary",
+									"value": "Origin, Accept-Encoding"
+								},
+								{
+									"key": "Access-Control-Allow-Credentials",
+									"value": "true"
+								},
+								{
+									"key": "X-RateLimit-Limit",
+									"value": "100"
+								},
+								{
+									"key": "X-RateLimit-Remaining",
+									"value": "87"
+								},
+								{
+									"key": "X-RateLimit-Reset",
+									"value": "1751365433"
+								},
+								{
+									"key": "ETag",
+									"value": "W/\"268-ovcvYcQXtCephrzfNLKkP4kQmDo\""
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"success\": true,\n    \"message\": \"Token refreshed successfully\",\n    \"data\": {\n        \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAyNDczMTM4LWVlNWItNDFmYy1iMDI2LTE0ODZhZjY2ZmRiNiIsImVtYWlsIjoib3JleGltdXNAZ21haWwuY29tIiwicm9sZSI6MSwiaWF0IjoxNzUxMzY0OTg1LCJleHAiOjE3NTE0NTEzODV9.m77z2JGFtArEVYjgxKVct3wm-yAGayjRPLkSyS6hgSE\",\n        \"refresh_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAyNDczMTM4LWVlNWItNDFmYy1iMDI2LTE0ODZhZjY2ZmRiNiIsImVtYWlsIjoib3JleGltdXNAZ21haWwuY29tIiwicm9sZSI6MSwiaWF0IjoxNzUxMzY0OTg1LCJleHAiOjE3NTE5Njk3ODV9.ofLaInph4yCadhvtG8HJdS5NtT8VQ1fUnnUWeZTgULU\"\n    },\n    \"timestamp\": \"2025-07-01T10:16:25.311Z\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "User Profile Management",
+			"item": [
+				{
+					"name": "Get Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"profile"
+							]
+						},
+						"description": "Get current user profile information."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (pm.request.body && pm.request.body.raw) {",
+									"        const requestBody = JSON.parse(pm.request.body.raw);",
+									"        if (requestBody.email) {",
+									"            console.log('⚠️ Email updated. Please verify the new email address.');",
+									"        }",
+									"    }",
+									"    console.log('✅ Profile updated successfully.');",
+									"} else {",
+									"    console.log('❌ Profile update failed:', pm.response.json());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"first_name\": \"John Updated\",\n  \"last_name\": \"Doe Updated\",\n  \"email\": \"john.updated@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"profile"
+							]
+						},
+						"description": "Update user profile. If email is changed, re-verification required."
+					},
+					"response": []
+				},
+				{
+					"name": "Change Password",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    console.log('✅ Password changed successfully. Confirmation email sent.');",
+									"} else {",
+									"    console.log('❌ Password change failed:', pm.response.json());",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"current_password\": \"Password123!\",\n  \"new_password\": \"NewPassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/change-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"change-password"
+							]
+						},
+						"description": "Change password with current password verification."
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    pm.collectionVariables.set('accessToken', '');",
+									"    pm.collectionVariables.set('refreshToken', '');",
+									"    console.log('✅ Logged out successfully. Tokens cleared.');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						},
+						"description": "Logout current user session."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Categories (Master)",
+			"item": [
+				{
+					"name": "Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/master/categories?page=0&limit=10&search=tech",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"master",
+								"categories"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Page number (optional)"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Items per page (optional)"
+								},
+								{
+									"key": "search",
+									"value": "tech",
+									"description": "Search term (optional)"
+								}
+							]
+						},
+						"description": "Get all categories with optional pagination and search."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Category by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/master/categories/660e8400-e29b-41d4-a716-446655440000",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"master",
+								"categories",
+								"660e8400-e29b-41d4-a716-446655440000"
+							]
+						},
+						"description": "Get specific category by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Category (Admin Only)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Programming\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/master/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"master",
+								"categories"
+							]
+						},
+						"description": "Create new category (Admin access required)."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Category (Admin Only)",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Software Development\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/master/categories/660e8400-e29b-41d4-a716-446655440000",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"master",
+								"categories",
+								"660e8400-e29b-41d4-a716-446655440000"
+							]
+						},
+						"description": "Update existing category (Admin access required)."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Category (Admin Only)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/master/categories/660e8400-e29b-41d4-a716-446655440000",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"master",
+								"categories",
+								"660e8400-e29b-41d4-a716-446655440000"
+							]
+						},
+						"description": "Delete category (Admin access required)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Blog Posts",
+			"item": [
+				{
+					"name": "Get All Posts (Public)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/blog/posts?page=0&limit=10&category_id=660e8400-e29b-41d4-a716-446655440000&search=nestjs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blog",
+								"posts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Page number (optional)"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Items per page (optional)"
+								},
+								{
+									"key": "category_id",
+									"value": "660e8400-e29b-41d4-a716-446655440000",
+									"description": "Filter by category (optional)"
+								},
+								{
+									"key": "search",
+									"value": "nestjs",
+									"description": "Search in title, content, tags (optional)"
+								}
+							]
+						},
+						"description": "Get all published posts with filtering and search."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Post by ID (Public)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/blog/posts/770e8400-e29b-41d4-a716-446655440000",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blog",
+								"posts",
+								"770e8400-e29b-41d4-a716-446655440000"
+							]
+						},
+						"description": "Get specific post by ID with author and category details."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Introduction to React Hooks\",\n  \"content\": \"React Hooks are a powerful feature that allows you to use state and other React features without writing a class component. In this comprehensive guide, we'll explore the most commonly used hooks and how to implement them in your projects.\\n\\n## useState Hook\\n\\nThe useState hook is the most basic hook that allows you to add state to functional components.\\n\\n```javascript\\nimport React, { useState } from 'react';\\n\\nfunction Counter() {\\n  const [count, setCount] = useState(0);\\n\\n  return (\\n    <div>\\n      <p>You clicked {count} times</p>\\n      <button onClick={() => setCount(count + 1)}>\\n        Click me\\n      </button>\\n    </div>\\n  );\\n}\\n```\\n\\n## useEffect Hook\\n\\nThe useEffect hook lets you perform side effects in functional components.\",\n  \"category_id\": \"660e8400-e29b-41d4-a716-446655440000\",\n  \"tags\": \"react,hooks,javascript,frontend,tutorial\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/blog/posts",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blog",
+								"posts"
+							]
+						},
+						"description": "Create a new blog post (Authentication required)."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Post",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Advanced React Hooks Patterns\",\n  \"content\": \"Updated content about advanced React Hooks patterns and best practices. This post covers custom hooks, performance optimization, and common pitfalls to avoid.\",\n  \"category_id\": \"660e8400-e29b-41d4-a716-446655440000\",\n  \"tags\": \"react,hooks,advanced,patterns,performance\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/blog/posts/770e8400-e29b-41d4-a716-446655440000",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blog",
+								"posts",
+								"770e8400-e29b-41d4-a716-446655440000"
+							]
+						},
+						"description": "Update existing post (Owner or Admin only)."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Post",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/blog/posts/770e8400-e29b-41d4-a716-446655440000",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blog",
+								"posts",
+								"770e8400-e29b-41d4-a716-446655440000"
+							]
+						},
+						"description": "Soft delete post (Owner or Admin only)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Posts",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/blog/my-posts?page=0&limit=10&search=react",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blog",
+								"my-posts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Page number (optional)"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Items per page (optional)"
+								},
+								{
+									"key": "search",
+									"value": "react",
+									"description": "Search term (optional)"
+								}
+							]
+						},
+						"description": "Get current user's posts with search and pagination."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Post Activities",
+			"item": [
+				{
+					"name": "Add Post Activity",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"like_count\": 1,\n  \"comment\": \"Great article! Very informative and well-written. The examples are clear and easy to follow. Thanks for sharing!\",\n  \"share_count\": 0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/blog/posts/770e8400-e29b-41d4-a716-446655440000/activity",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blog",
+								"posts",
+								"770e8400-e29b-41d4-a716-446655440000",
+								"activity"
+							]
+						},
+						"description": "Add activity to a post (like, comment, share)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Post Activities",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/blog/posts/770e8400-e29b-41d4-a716-446655440000/activities?page=0&limit=10",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blog",
+								"posts",
+								"770e8400-e29b-41d4-a716-446655440000",
+								"activities"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Page number (optional)"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Items per page (optional)"
+								}
+							]
+						},
+						"description": "Get all activities for a specific post."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin Only",
+			"item": [
+				{
+					"name": "Get All Posts (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/blog/all-posts?page=0&limit=10&user_id=550e8400-e29b-41d4-a716-446655440001&category_id=660e8400-e29b-41d4-a716-446655440000&search=nestjs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blog",
+								"all-posts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0",
+									"description": "Page number (optional)"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Items per page (optional)"
+								},
+								{
+									"key": "user_id",
+									"value": "550e8400-e29b-41d4-a716-446655440001",
+									"description": "Filter by user (optional)"
+								},
+								{
+									"key": "category_id",
+									"value": "660e8400-e29b-41d4-a716-446655440000",
+									"description": "Filter by category (optional)"
+								},
+								{
+									"key": "search",
+									"value": "nestjs",
+									"description": "Search term (optional)"
+								}
+							]
+						},
+						"description": "Admin view of all posts including deleted ones."
+					},
+					"response": []
+				},
+				{
+					"name": "Force Delete Post (Admin)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/blog/posts/770e8400-e29b-41d4-a716-446655440000/force",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"blog",
+								"posts",
+								"770e8400-e29b-41d4-a716-446655440000",
+								"force"
+							]
+						},
+						"description": "Permanently delete post from database (Admin only)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "System",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Health check successful', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.status).to.eql('OK');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/../health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"..",
+								"health"
+							]
+						},
+						"description": "Check API server health and status."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-refresh token if expired",
+					"const accessToken = pm.collectionVariables.get('accessToken');",
+					"const refreshToken = pm.collectionVariables.get('refreshToken');",
+					"",
+					"if (accessToken && refreshToken) {",
+					"    // Check if token is expired (basic check)",
+					"    try {",
+					"        const tokenPayload = JSON.parse(atob(accessToken.split('.')[1]));",
+					"        const currentTime = Math.floor(Date.now() / 1000);",
+					"        ",
+					"        if (tokenPayload.exp && tokenPayload.exp < currentTime) {",
+					"            console.log('🔄 Access token expired, attempting refresh...');",
+					"            // Token refresh logic would go here",
+					"        }",
+					"    } catch (e) {",
+					"        // Invalid token format",
+					"    }",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5001/api",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "testEmail",
+			"value": "test@example.com",
+			"type": "string"
+		},
+		{
+			"key": "testOTP",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
