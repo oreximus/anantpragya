@@ -4,3 +4,4 @@ node_modules/*
 src.zip
 backEnd.zip
 frontEnd.zip
+node_modules/
