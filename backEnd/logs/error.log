@@ -27,3 +27,4 @@
 {"ip_address":"::1","level":"error","message":[{"label":"error","message":"No categories found!"}],"method":"GET","service":"/api/post/categories","status":401,"timestamp":"Jul-09-2025 05:46:10"}
 {"ip_address":"::1","level":"error","message":[{"label":"error","message":"No categories found!"}],"method":"GET","service":"/api/post/categories","status":401,"timestamp":"Jul-09-2025 05:47:33"}
 {"ip_address":"::1","level":"error","message":[{"label":"error","message":"No posts found!"}],"method":"GET","service":"/api/post/list?page=1&limit=10&search=&category_id=6be0ad19-5c4d-11f0-9142-de3fa0651a50","status":401,"timestamp":"Jul-09-2025 05:48:04"}
+{"ip_address":"::1","level":"error","message":[{"label":"error","message":"User with this email already exists!"}],"method":"POST","service":"/api/auth/register","status":401,"timestamp":"Jul-09-2025 12:23:36"}
