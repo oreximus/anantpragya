@@ -16,6 +16,7 @@ module.exports = {
   changePassword,
   forgotPassword,
   resetPassword,
+  verifyEmailOtp,
 };
 
 // User Registration
@@ -36,6 +37,15 @@ async function userRegister(params) {
     // Hash password
     const hashedPassword = await securePwd.securePassword(params.password);
 
+    // Generate OTP for email verification
+    const otp = common.generateNumericOTP(6);
+    const otpExpiresAt = common.addTime(
+      common.curDateTime(),
+      15,
+      "minutes",
+      "YYYY-MM-DD HH:mm:ss",
+    ); // OTP valid for 15 minutes
+
     // Create new user
     const user = new db.User();
     user.first_name = params.first_name;
@@ -43,25 +53,25 @@ async function userRegister(params) {
     user.email = params.email;
     user.phone_no = params.phone_no || null;
     user.password = hashedPassword;
+    user.email_verification_otp = otp;
+    user.email_verification_expires_at = otpExpiresAt;
+    user.is_email_verified = 0; // Set to unverified initially
     user.created_at = common.curDateTime();
     user.updated_at = common.curDateTime();
 
     const savedUser = await user.save();
 
-    // Generate JWT Token
-    const jwtData = {
-      time: Date(),
-      userId: savedUser.id,
-      isAdmin: savedUser.is_admin,
-    };
-    const token = jwt.sign(jwtData, process.env.JWT_SECRET_KEY, {
-      expiresIn: "7d",
-    });
-
-    // Update access token
-    await db.User.update(
-      { access_token: token, updated_at: common.curDateTime() },
-      { where: { id: savedUser.id } },
+    // Send email verification OTP
+    await common.sendMail(
+      "Verification",
+      [savedUser.email],
+      "Email Verification OTP",
+      "email-verification-otp",
+      {
+        first_name: savedUser.first_name,
+        otp: otp,
+        otp_expiry_minutes: 15,
+      },
     );
 
     const output = {
@@ -71,8 +81,7 @@ async function userRegister(params) {
       email: savedUser.email,
       phone_no: savedUser.phone_no,
       is_admin: savedUser.is_admin,
-      access_token: token,
-      expire_token: "7 days",
+      message: "Registration successful. Please verify your email.",
     };
 
     return output;
@@ -101,6 +110,11 @@ async function userLogin(params) {
 
     if (!user) {
       throw "Invalid credentials. Please try again!";
+    }
+
+    // Check if email is verified
+    if (!user.is_email_verified) {
+      throw "Please verify your email address before logging in.";
     }
 
     // Debug logging
@@ -280,11 +294,35 @@ async function forgotPassword(params) {
       throw "User with this email does not exist!";
     }
 
-    // Generate reset token
+    // Generate reset token and expiry
     const resetToken = common.generateRandomString(32);
+    const resetTokenExpiresAt = common.addTime(
+      common.curDateTime(),
+      30,
+      "minutes",
+      "YYYY-MM-DD HH:mm:ss",
+    ); // Link valid for 30 minutes
 
-    // Here you would typically save the reset token to database and send email
-    // For now, we'll just return success message
+    // Save reset token and expiry to user record
+    user.reset_password_token = resetToken;
+    user.reset_password_expires_at = resetTokenExpiresAt;
+    await user.save();
+
+    // Construct reset link
+    const resetLink = `${process.env.BASE_URL}/reset-password?token=${resetToken}&email=${user.email}`;
+
+    // Send forgot password email
+    await common.sendMail(
+      "Password Reset",
+      [user.email],
+      "Password Reset Request",
+      "forgot-password-link",
+      {
+        first_name: user.first_name,
+        reset_link: resetLink,
+        link_expiry_minutes: 30,
+      },
+    );
 
     return { message: "Password reset instructions sent to your email" };
   } catch (err) {
@@ -296,12 +334,10 @@ async function forgotPassword(params) {
 // Reset Password
 async function resetPassword(params) {
   try {
-    // Here you would typically validate the reset token
-    // For now, we'll just find user by email
-
     const user = await db.User.scope("withHash").findOne({
       where: {
         email: params.email,
+        reset_password_token: params.reset_token,
         is_deleted: 0,
         is_active: 1,
       },
@@ -311,16 +347,100 @@ async function resetPassword(params) {
       throw "Invalid reset token or user not found!";
     }
 
+    // Check if token has expired
+    const now = new Date();
+    const tokenExpiry = new Date(user.reset_password_expires_at);
+    if (now > tokenExpiry) {
+      throw "Password reset token has expired!";
+    }
+
     // Hash new password
     const hashedPassword = await securePwd.securePassword(params.new_password);
 
-    // Update password
+    // Update password and clear reset token fields
     user.password = hashedPassword;
+    user.reset_password_token = null;
+    user.reset_password_expires_at = null;
     user.updated_at = common.curDateTime();
 
     await user.save();
 
+    // Send password reset confirmation email
+    await common.sendMail(
+      "Password Reset",
+      [user.email],
+      "Password Successfully Reset",
+      "password-reset-confirmation",
+      {
+        first_name: user.first_name,
+      },
+    );
+
     return { message: "Password reset successfully" };
+  } catch (err) {
+    console.log(err);
+    throw catchError(err);
+  }
+}
+
+// Verify Email OTP
+async function verifyEmailOtp(params) {
+  try {
+    const user = await db.User.findOne({
+      where: {
+        email: params.email,
+        email_verification_otp: params.otp,
+        is_deleted: 0,
+      },
+    });
+
+    if (!user) {
+      throw "Invalid OTP or email!";
+    }
+
+    // Check if OTP has expired
+    const now = new Date();
+    const otpExpiry = new Date(user.email_verification_expires_at);
+    if (now > otpExpiry) {
+      throw "OTP has expired! Please request a new one.";
+    }
+
+    // Mark email as verified and clear OTP fields
+    user.is_email_verified = 1;
+    user.email_verification_otp = null;
+    user.email_verification_expires_at = null;
+    user.updated_at = common.curDateTime();
+    await user.save();
+
+    // Generate JWT Token for immediate login after verification
+    const jwtData = {
+      time: Date(),
+      userId: user.id,
+      isAdmin: user.is_admin,
+    };
+    const token = jwt.sign(jwtData, process.env.JWT_SECRET_KEY, {
+      expiresIn: "7d",
+    });
+
+    // Update access token
+    await db.User.update(
+      { access_token: token, updated_at: common.curDateTime() },
+      { where: { id: user.id } },
+    );
+
+    const output = {
+      id: user.id,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      phone_no: user.phone_no,
+      is_admin: user.is_admin,
+      access_token: token,
+      expire_token: "7 days",
+      message: "Email verified successfully. You are now logged in.",
+    };
+
+    return output;
   } catch (err) {
     console.log(err);
     throw catchError(err);

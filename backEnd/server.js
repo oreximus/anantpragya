@@ -42,12 +42,15 @@ app.use(bodyParser.json());
 // for parsing multipart / form-data
 app.use(processImage());
 app.use(express.static(path.join(__dirname, "public")));
+app.get("/reset-password", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "reset-password.html"));
+});
 app.use("/uploads", express.static("uploads"));
 
 // enabling CORS for all requests
 const corsOptionsDelegate = (req, callback) => {
   let corsOptions;
-  let isDomainAllowed = allowlist.indexOf(req.header("Origin")) !== -1;
+  const isDomainAllowed = allowlist.indexOf(req.header("Origin")) !== -1;
   if (isDomainAllowed) {
     // Enable CORS for this request
     corsOptions = {
@@ -80,7 +83,7 @@ app.use(routes);
 // Start server
 const port =
   process.env.NODE_ENV === "production" ? process.env.PORT || 8080 : 3002;
-const httpServer = process.env.NODE_ENV === "production" ? https : http;
+const httpServer = process.env.NODE_ENV === "production" ? http : http;
 // Create a NodeJS HTTPS listener on port 9006 that points to the Express app
 // Use a callback function to tell when the server is created.
 const server = httpServer.createServer(app);

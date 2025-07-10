@@ -13,6 +13,7 @@ module.exports = {
   changePassword,
   forgotPassword,
   resetPassword,
+  verifyEmailOtp, // Add this line
 };
 
 // User Registration
@@ -77,6 +78,16 @@ async function resetPassword(req, res, next) {
     .resetPassword(req.body)
     .then((result) =>
       responseHandler(req, res, msg.user.resetPassword, true, result),
+    )
+    .catch((error) => responseHandler(req, res, error));
+}
+
+// Verify Email OTP
+async function verifyEmailOtp(req, res, next) {
+  service
+    .verifyEmailOtp(req.body)
+    .then((result) =>
+      responseHandler(req, res, msg.user.emailVerified, true, result),
     )
     .catch((error) => responseHandler(req, res, error));
 }

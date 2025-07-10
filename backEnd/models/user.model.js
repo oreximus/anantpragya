@@ -56,6 +56,27 @@ function model(sequelize) {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    email_verification_otp: {
+      type: DataTypes.STRING(10),
+      allowNull: true,
+    },
+    email_verification_expires_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    is_email_verified: {
+      type: DataTypes.TINYINT(1),
+      defaultValue: 0,
+      comment: "0=No, 1=Yes",
+    },
+    reset_password_token: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    reset_password_expires_at: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,

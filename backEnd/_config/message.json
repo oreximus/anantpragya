@@ -14,7 +14,8 @@
     "update": "Profile updated successfully.",
     "forgotPassword": "Password reset instructions sent to your email.",
     "resetPassword": "Password reset successfully.",
-    "list": "Users fetched successfully."
+    "list": "Users fetched successfully.",
+    "emailVerified": "Email verified successfully."
   },
   "file": {
     "add": "File uploaded successfully.",
