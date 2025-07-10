@@ -1,7 +1,14 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../../lib/hooks/redux";
+import {
+  loginUser,
+  clearError,
+  clearMessage,
+} from "../../lib/features/auth/authSlice";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -11,10 +18,37 @@ export default function Login() {
     rememberMe: false,
   });
 
-  const handleSubmit = (e) => {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { isLoading, error, message, isAuthenticated } = useAppSelector(
+    (state) => state.auth
+  );
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/");
+    }
+  }, [isAuthenticated, router]);
+
+  useEffect(() => {
+    // Clear error and message when component mounts
+    dispatch(clearError());
+    dispatch(clearMessage());
+  }, [dispatch]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login attempt:", formData);
-    // Add your login logic here
+
+    try {
+      await dispatch(
+        loginUser({
+          email: formData.email,
+          password: formData.password,
+        })
+      ).unwrap();
+    } catch (error) {
+      console.error("Login failed:", error);
+    }
   };
 
   const handleChange = (e) => {
@@ -60,6 +94,20 @@ export default function Login() {
             <p className="text-gray-600">अपने खाते में लॉग इन करें</p>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {message && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-600 text-sm">{message}</p>
+            </div>
+          )}
+
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email Field */}
@@ -74,7 +122,7 @@ export default function Login() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   placeholder="आपका ईमेल दर्ज करें"
                   required
                 />
@@ -93,7 +141,7 @@ export default function Login() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   placeholder="आपका पासवर्ड दर्ज करें"
                   required
                 />
@@ -136,9 +184,17 @@ export default function Login() {
             {/* Login Button */}
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] shadow-lg"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              लॉग इन करें
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  लॉग इन हो रहे हैं...
+                </div>
+              ) : (
+                "लॉग इन करें"
+              )}
             </button>
           </form>
 

@@ -1,13 +1,21 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Phone } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "../../lib/hooks/redux";
+import {
+  registerUser,
+  clearError,
+  clearMessage,
+} from "../../lib/features/auth/authSlice";
 
 export default function SignUp() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formData, setFormData] = useState({
-    fullName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     password: "",
@@ -15,14 +23,49 @@ export default function SignUp() {
     agreeToTerms: false,
   });
 
-  const handleSubmit = (e) => {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const { isLoading, error, message, emailVerificationSent } = useAppSelector(
+    (state) => state.auth
+  );
+
+  useEffect(() => {
+    if (emailVerificationSent) {
+      router.push(`/verify-email?email=${encodeURIComponent(formData.email)}`);
+    }
+  }, [emailVerificationSent, formData.email, router]);
+
+  useEffect(() => {
+    // Clear error and message when component mounts
+    dispatch(clearError());
+    dispatch(clearMessage());
+  }, [dispatch]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (formData.password !== formData.confirmPassword) {
       alert("पासवर्ड मेल नहीं खाते");
       return;
     }
-    console.log("Sign up attempt:", formData);
-    // Add your signup logic here
+
+    if (!formData.agreeToTerms) {
+      alert("कृपया नियम और शर्तों से सहमत हों");
+      return;
+    }
+
+    try {
+      await dispatch(
+        registerUser({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+        })
+      ).unwrap();
+    } catch (error) {
+      console.error("Registration failed:", error);
+    }
   };
 
   const handleChange = (e) => {
@@ -68,24 +111,57 @@ export default function SignUp() {
             <p className="text-gray-600">अनंतप्रज्ञा में शामिल हों</p>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
+          {/* Success Message */}
+          {message && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-600 text-sm">{message}</p>
+            </div>
+          )}
+
           {/* Sign Up Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Full Name Field */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                पूरा नाम
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                  placeholder="आपका पूरा नाम"
-                  required
-                />
+            {/* Name Fields */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  पहला नाम
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    placeholder="पहला नाम"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  अंतिम नाम
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className="w-full pl-10 pr-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    placeholder="अंतिम नाम"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
@@ -101,7 +177,7 @@ export default function SignUp() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   placeholder="आपका ईमेल पता"
                   required
                 />
@@ -120,9 +196,8 @@ export default function SignUp() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   placeholder="आपका फोन नंबर"
-                  required
                 />
               </div>
             </div>
@@ -139,7 +214,7 @@ export default function SignUp() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-12 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   placeholder="पासवर्ड बनाएं"
                   required
                 />
@@ -160,7 +235,7 @@ export default function SignUp() {
             {/* Confirm Password Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                पासवर्ड की पुष्टि करें
+                पासवर्ड की पुष्टि करे���
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -169,7 +244,7 @@ export default function SignUp() {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                  className="w-full pl-10 pr-12 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                   placeholder="पासवर्ड दोबारा दर्ज करें"
                   required
                 />
@@ -219,9 +294,17 @@ export default function SignUp() {
             {/* Sign Up Button */}
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] shadow-lg"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              खाता बनाएं
+              {isLoading ? (
+                <div className="flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  खाता बनाया जा रहा है...
+                </div>
+              ) : (
+                "खाता बनाएं"
+              )}
             </button>
           </form>
 
