@@ -7,6 +7,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: false, // Set to true if you need to send cookies
 });
 
 // Request interceptor to add auth token
@@ -23,43 +24,31 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle token refresh
+// Response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
-
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        const refreshToken = localStorage.getItem("refresh_token");
-        if (refreshToken) {
-          const response = await axios.post(
-            "http://localhost:3002/api/auth/refresh-token",
-            {
-              refresh_token: refreshToken,
-            }
-          );
-
-          const { access_token, refresh_token: newRefreshToken } =
-            response.data.data;
-
-          localStorage.setItem("access_token", access_token);
-          localStorage.setItem("refresh_token", newRefreshToken);
-
-          originalRequest.headers.Authorization = `Bearer ${access_token}`;
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        // Refresh failed, redirect to login
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        window.location.href = "/login";
-        return Promise.reject(refreshError);
-      }
+    // Handle CORS and network errors
+    if (!error.response) {
+      return Promise.reject({
+        response: {
+          data: {
+            status: false,
+            message:
+              "Network error. Please check your connection and ensure the server is running.",
+          },
+        },
+      });
     }
 
+    // Handle 401 errors by redirecting to login
+    if (error.response?.status === 401) {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("user_data");
+      window.location.href = "/login";
+    }
+
+    // Handle other errors
     return Promise.reject(error);
   }
 );

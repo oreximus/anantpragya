@@ -13,7 +13,7 @@ import { Suspense } from "react";
 
 function ResetPasswordContent() {
   const [formData, setFormData] = useState({
-    otp: "",
+    resetToken: "",
     newPassword: "",
     confirmPassword: "",
   });
@@ -36,7 +36,7 @@ function ResetPasswordContent() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !formData.otp || !formData.newPassword) {
+    if (!email || !formData.resetToken || !formData.newPassword) {
       alert("कृपया सभी फील्ड भरें");
       return;
     }
@@ -50,8 +50,9 @@ function ResetPasswordContent() {
       await dispatch(
         resetPassword({
           email: email,
-          otp: formData.otp,
+          resetToken: formData.resetToken,
           newPassword: formData.newPassword,
+          confirmPassword: formData.confirmPassword,
         })
       ).unwrap();
 
@@ -140,15 +141,15 @@ function ResetPasswordContent() {
             {/* OTP Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                सत्यापन कोड
+                रीसेट टोकन
               </label>
               <input
                 type="text"
-                name="otp"
-                value={formData.otp}
+                name="resetToken"
+                value={formData.resetToken}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-center text-lg font-mono tracking-widest"
-                placeholder="000000"
+                placeholder="रीसेट टोकन दर्ज करें"
                 maxLength={6}
                 required
               />

@@ -5,12 +5,14 @@ export const register = async (userData) => {
     first_name: userData.firstName,
     last_name: userData.lastName,
     email: userData.email,
+    phone_no: userData.phone,
     password: userData.password,
+    confirm_password: userData.confirmPassword,
   });
 };
 
 export const verifyEmail = async (verificationData) => {
-  return await api.post("/auth/verify-email", {
+  return await api.post("/auth/verify-email-otp", {
     email: verificationData.email,
     otp: verificationData.otp,
   });
@@ -38,33 +40,30 @@ export const forgotPassword = async (email) => {
 export const resetPassword = async (resetData) => {
   return await api.post("/auth/reset-password", {
     email: resetData.email,
-    otp: resetData.otp,
+    reset_token: resetData.resetToken,
     new_password: resetData.newPassword,
+    confirm_password: resetData.confirmPassword,
   });
 };
 
-export const refreshToken = async (refreshToken) => {
-  return await api.post("/auth/refresh-token", {
-    refresh_token: refreshToken,
-  });
-};
-
-// New Profile APIs
+// Profile APIs
 export const getUserProfile = async () => {
   return await api.get("/auth/profile");
 };
 
 export const updateUserProfile = async (profileData) => {
-  return await api.put("/auth/profile", {
+  return await api.post("/auth/update-profile", {
     first_name: profileData.firstName,
     last_name: profileData.lastName,
     email: profileData.email,
+    phone_no: profileData.phone,
   });
 };
 
 export const changePassword = async (passwordData) => {
-  return await api.put("/auth/change-password", {
+  return await api.post("/auth/change-password", {
     current_password: passwordData.currentPassword,
     new_password: passwordData.newPassword,
+    confirm_password: passwordData.confirmPassword,
   });
 };

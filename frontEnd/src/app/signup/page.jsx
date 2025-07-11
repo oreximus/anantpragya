@@ -60,7 +60,9 @@ export default function SignUp() {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
+          phone: formData.phone,
           password: formData.password,
+          confirmPassword: formData.confirmPassword,
         })
       ).unwrap();
     } catch (error) {
@@ -235,7 +237,7 @@ export default function SignUp() {
             {/* Confirm Password Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                पासवर्ड की पुष्टि करे���
+                पासवर्ड की पुष्टि करे
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />

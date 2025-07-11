@@ -13,7 +13,10 @@ import {
   User,
   LogOut,
   Settings,
-} from "lucide-react";
+  PenTool,
+  FileText,
+  Users,
+} from "lucide-react"; // Added Users icon
 import { useAppSelector, useAppDispatch } from "../../lib/hooks/redux";
 import { logout } from "../../lib/features/auth/authSlice";
 
@@ -29,6 +32,27 @@ const navigationItems = [
 ];
 
 const sideMenuItems = [
+  {
+    name: "CREATE POST",
+    href: "/create-post",
+    icon: PenTool,
+    requireAuth: true,
+    adminOnly: true,
+  },
+  {
+    name: "ALL BLOGS",
+    href: "/get-all-blogs",
+    icon: FileText,
+    requireAuth: true,
+    adminOnly: true,
+  },
+  {
+    name: "ALL USERS",
+    href: "/list_of_all_user",
+    icon: Users,
+    requireAuth: true,
+    adminOnly: true,
+  }, // New item
   { name: "VIDEOS", hasSubmenu: true },
   { name: "INDIA", hasSubmenu: true },
   { name: "WEB STORIES", hasSubmenu: true },
@@ -105,9 +129,44 @@ export default function Header({ isMenuOpen, setIsMenuOpen }) {
     closeUserMenu();
   };
 
+  const handleMenuItemClick = (item) => {
+    // Check if item requires authentication
+    if (item.requireAuth && !isAuthenticated) {
+      router.push("/login");
+      closeMenu();
+      return;
+    }
+
+    // Check if item is admin only
+    if (item.adminOnly && user?.role !== "admin") {
+      alert("आपके पास इस सुविधा तक पहुंचने की अनुमति नहीं है।");
+      closeMenu();
+      return;
+    }
+
+    // Navigate to the item's href if it exists
+    if (item.href) {
+      router.push(item.href);
+      closeMenu();
+    }
+  };
+
   const isActiveRoute = (href) => {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
+  };
+
+  const getMenuItemLabel = (itemName) => {
+    switch (itemName) {
+      case "CREATE POST":
+        return "लेख लिखें";
+      case "ALL BLOGS":
+        return "सभी लेख";
+      case "ALL USERS": // New case
+        return "सभी उपयोगकर्ता";
+      default:
+        return itemName;
+    }
   };
 
   // Side Menu Content Component
@@ -156,6 +215,11 @@ export default function Header({ isMenuOpen, setIsMenuOpen }) {
                   {user.first_name} {user.last_name}
                 </p>
                 <p className="text-sm text-gray-600">{user.email}</p>
+                {user.role === "admin" && (
+                  <span className="inline-block bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium mt-1">
+                    एडमिन
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex space-x-2">
@@ -192,22 +256,121 @@ export default function Header({ isMenuOpen, setIsMenuOpen }) {
 
       {/* Menu Items */}
       <div className="py-2">
-        {sideMenuItems.map((item, index) => (
-          <Link
-            key={item.name}
-            href={`/${item.name.toLowerCase().replace(/\s+/g, "-")}`}
-            className="flex items-center justify-between px-6 py-4 text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] group"
-            onClick={closeMenu}
-          >
-            <span className="text-sm font-medium group-hover:text-blue-600 transition-colors duration-200">
-              {item.name}
-            </span>
-            {item.hasSubmenu && (
-              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-all duration-200 transform group-hover:translate-x-1" />
-            )}
-          </Link>
-        ))}
+        {sideMenuItems.map((item, index) => {
+          // Check if item should be shown based on authentication and admin status
+          if (item.requireAuth && !isAuthenticated) {
+            return null;
+          }
+          if (item.adminOnly && user?.role !== "admin") {
+            return null;
+          }
+
+          const ItemIcon = item.icon;
+          const isActive = item.href && isActiveRoute(item.href);
+
+          return (
+            <div
+              key={item.name}
+              className={`flex items-center justify-between px-6 py-4 text-gray-700 hover:bg-gray-50 border-b border-gray-50 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98] group cursor-pointer ${
+                isActive
+                  ? "bg-blue-50 text-blue-600 border-l-4 border-l-blue-600"
+                  : ""
+              }`}
+              onClick={() => handleMenuItemClick(item)}
+            >
+              <div className="flex items-center space-x-3">
+                {ItemIcon && (
+                  <ItemIcon
+                    className={`w-5 h-5 transition-colors duration-200 ${
+                      isActive
+                        ? "text-blue-600"
+                        : "text-gray-400 group-hover:text-blue-600"
+                    }`}
+                  />
+                )}
+                <span
+                  className={`text-sm font-medium transition-colors duration-200 ${
+                    isActive ? "text-blue-600" : "group-hover:text-blue-600"
+                  }`}
+                  style={{
+                    fontFamily:
+                      item.name === "CREATE POST" ||
+                      item.name === "ALL BLOGS" ||
+                      item.name === "ALL USERS" // Added ALL USERS
+                        ? "Noto Sans Devanagari, Arial, sans-serif"
+                        : "inherit",
+                  }}
+                >
+                  {getMenuItemLabel(item.name)}
+                </span>
+              </div>
+              {item.hasSubmenu && (
+                <ChevronRight
+                  className={`w-4 h-4 transition-all duration-200 transform group-hover:translate-x-1 ${
+                    isActive
+                      ? "text-blue-600"
+                      : "text-gray-400 group-hover:text-blue-600"
+                  }`}
+                />
+              )}
+            </div>
+          );
+        })}
       </div>
+
+      {/* Quick Actions for Admin Users */}
+      {isAuthenticated && user?.role === "admin" && (
+        <div className="p-6 border-t border-gray-200 bg-gray-50">
+          <h3
+            className="text-sm font-semibold text-gray-800 mb-3"
+            style={{
+              fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+            }}
+          >
+            एडमिन पैनल
+          </h3>
+          <div className="space-y-2">
+            <Link href="/create-post" onClick={closeMenu}>
+              <button className="w-full flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm">
+                <PenTool className="w-4 h-4" />
+                <span
+                  style={{
+                    fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                  }}
+                >
+                  नया लेख लिखें
+                </span>
+              </button>
+            </Link>
+            <Link href="/get-all-blogs" onClick={closeMenu}>
+              <button className="w-full flex items-center space-x-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-3 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm">
+                <FileText className="w-4 h-4" />
+                <span
+                  style={{
+                    fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                  }}
+                >
+                  सभी लेख प्रबंधन
+                </span>
+              </button>
+            </Link>
+            <Link href="/list_of_all_users" onClick={closeMenu}>
+              {" "}
+              {/* New Admin Panel Link */}
+              <button className="w-full flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm">
+                <Users className="w-4 h-4" />
+                <span
+                  style={{
+                    fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                  }}
+                >
+                  सभी उपयोगकर्ता प्रबंधन
+                </span>
+              </button>
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -311,6 +474,11 @@ export default function Header({ isMenuOpen, setIsMenuOpen }) {
                   <span className="text-sm font-medium text-gray-700">
                     {user.first_name}
                   </span>
+                  {user.role === "admin" && (
+                    <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">
+                      Admin
+                    </span>
+                  )}
                 </button>
 
                 {/* User Dropdown Menu */}
@@ -324,6 +492,34 @@ export default function Header({ isMenuOpen, setIsMenuOpen }) {
                       <Settings className="w-4 h-4" />
                       <span>प्रोफाइल सेटिंग्स</span>
                     </Link>
+                    {user.role === "admin" && (
+                      <>
+                        <Link
+                          href="/create-post"
+                          onClick={closeUserMenu}
+                          className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <PenTool className="w-4 h-4" />
+                          <span>लेख लिखें</span>
+                        </Link>
+                        <Link
+                          href="/get-all-blogs"
+                          onClick={closeUserMenu}
+                          className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <FileText className="w-4 h-4" />
+                          <span>सभी लेख</span>
+                        </Link>
+                        <Link // New dropdown menu item
+                          href="/list_of_all_users"
+                          onClick={closeUserMenu}
+                          className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:bg-gray-50 transition-colors"
+                        >
+                          <Users className="w-4 h-4" />
+                          <span>सभी उपयोगकर्ता</span>
+                        </Link>
+                      </>
+                    )}
                     <hr className="my-1" />
                     <button
                       onClick={handleLogout}

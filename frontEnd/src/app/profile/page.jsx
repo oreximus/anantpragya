@@ -12,6 +12,7 @@ import {
   EyeOff,
   Save,
   Lock,
+  Phone,
 } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "../../lib/hooks/redux";
 import {
@@ -28,6 +29,7 @@ export default function Profile() {
     firstName: "",
     lastName: "",
     email: "",
+    phone: "",
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -60,12 +62,12 @@ export default function Profile() {
   }, [dispatch, isAuthenticated, router]);
 
   useEffect(() => {
-    // Update form data when user data is loaded
     if (user) {
       setProfileData({
         firstName: user.first_name || "",
         lastName: user.last_name || "",
         email: user.email || "",
+        phone: user.phone_no || "",
       });
     }
   }, [user]);
@@ -100,6 +102,7 @@ export default function Profile() {
         changePassword({
           currentPassword: passwordData.currentPassword,
           newPassword: passwordData.newPassword,
+          confirmPassword: passwordData.confirmPassword,
         })
       ).unwrap();
 
@@ -284,6 +287,24 @@ export default function Profile() {
                       className="w-full pl-10 pr-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                       placeholder="ईमेल पता"
                       required
+                    />
+                  </div>
+                </div>
+
+                {/* Phone Number */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    फोन नंबर
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={profileData.phone}
+                      onChange={handleProfileChange}
+                      className="w-full pl-10 pr-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                      placeholder="फोन नंबर"
                     />
                   </div>
                 </div>
