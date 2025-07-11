@@ -48,31 +48,13 @@ app.get("/reset-password", (req, res) => {
 app.use("/uploads", express.static("uploads"));
 
 // enabling CORS for all requests
-const corsOptionsDelegate = (req, callback) => {
-  let corsOptions;
-  const isDomainAllowed = allowlist.indexOf(req.header("Origin")) !== -1;
-  if (isDomainAllowed) {
-    // Enable CORS for this request
-    corsOptions = {
-      origin: true,
-      methods: ["GET", "POST", "DELETE", "UPDATE", "PUT", "PATCH"],
-      allowedHeaders: [
-        "Content-Type",
-        "Authorization",
-        "Accept",
-        "Access-Control-Request-Method",
-        "X-Requested-With",
-      ],
-      credentials: true,
-      optionsSuccessStatus: 200, // for some legacy browsers
-    };
-  } else {
-    // Disable CORS for this request
-    corsOptions = { origin: false };
-  }
-  callback(null, corsOptions);
-};
-app.use(cors(corsOptionsDelegate));
+app.use(
+  cors({
+    origin: "http://localhost:3000", // Allow only your frontend
+    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
+    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+  }),
+);
 
 // Global error handler
 app.use(errorHandler);

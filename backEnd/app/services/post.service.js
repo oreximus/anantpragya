@@ -6,6 +6,8 @@ const { Op } = require("sequelize");
 const db = require("_helpers/db");
 const common = require("_helpers/common");
 const catchError = require("_middleware/catch-error");
+const path = require("path");
+const fs = require("fs");
 
 module.exports = {
   getPostCategories,
@@ -59,6 +61,8 @@ async function getPostList(params) {
       whereCondition[Op.or] = [
         { title: { [Op.like]: `%${params.search}%` } },
         { post_data: { [Op.like]: `%${params.search}%` } },
+        { summary: { [Op.like]: `%${params.search}%` } }, // Search in summary
+        { tags: { [Op.like]: `%${params.search}%` } }, // Search in tags
       ];
     }
 
@@ -85,6 +89,13 @@ async function getPostList(params) {
           where: { is_deleted: 0 },
           required: false,
           attributes: ["id", "is_liked", "created_by"],
+        },
+        {
+          model: db.PostFile, // Include post files
+          as: "files",
+          where: { is_deleted: 0 },
+          required: false,
+          attributes: ["id", "original_name", "file_path"],
         },
       ],
       order: [["created_at", "DESC"]],
@@ -159,18 +170,47 @@ async function getPostById(postId) {
 }
 
 // Create Post
-async function createPost(params, auth) {
+async function createPost(params, auth, file) {
+  // Added file parameter
   try {
+    // Find category ID from category name
+    let categoryId = null;
+    if (params.category) {
+      const category = await db.PostCategory.findOne({
+        where: { name: params.category, is_deleted: 0, is_active: 1 },
+      });
+      if (category) {
+        categoryId = category.id;
+      } else {
+        throw "Invalid category provided!";
+      }
+    }
+
     const post = new db.Post();
-    post.category_id = params.category_id || null;
+    post.category_id = categoryId;
     post.title = params.title;
-    post.post_data = params.post_data || null;
+    post.summary = params.summary || null; // New field
+    post.post_data = params.content || null; // Maps to content from frontend
+    post.tags = params.tags || []; // New field, will be JSON stringified by model setter
+    post.status = params.status || "draft"; // New field
     post.created_at = common.curDateTime();
     post.created_by = auth.user_id;
     post.updated_at = common.curDateTime();
     post.updated_by = auth.user_id;
 
     const savedPost = await post.save();
+
+    // Handle featured image upload
+    if (file) {
+      const postFile = new db.PostFile();
+      postFile.post_id = savedPost.id;
+      postFile.original_name = file.originalname;
+      // file.path is the absolute path, file.uploaded_path is the relative path from public
+      postFile.file_path = path.join("/", file.uploaded_path, file.filename); // Store relative path
+      postFile.created_at = common.curDateTime(); // Assuming created_at/by are not in model, add if needed
+      postFile.created_by = auth.user_id;
+      await postFile.save();
+    }
 
     return { id: savedPost.id, message: "Post created successfully" };
   } catch (err) {
@@ -180,7 +220,8 @@ async function createPost(params, auth) {
 }
 
 // Update Post
-async function updatePost(params, auth) {
+async function updatePost(params, auth, file) {
+  // Added file parameter
   try {
     const post = await db.Post.findOne({
       where: {
@@ -202,13 +243,49 @@ async function updatePost(params, auth) {
       throw "Unauthorized! You can only edit your own posts.";
     }
 
-    post.category_id = params.category_id || post.category_id;
+    // Find category ID from category name if provided
+    let categoryId = post.category_id;
+    if (params.category) {
+      const category = await db.PostCategory.findOne({
+        where: { name: params.category, is_deleted: 0, is_active: 1 },
+      });
+      if (category) {
+        categoryId = category.id;
+      } else {
+        throw "Invalid category provided!";
+      }
+    }
+
+    post.category_id = categoryId;
     post.title = params.title || post.title;
-    post.post_data = params.post_data || post.post_data;
+    post.summary = params.summary !== undefined ? params.summary : post.summary; // New field
+    post.post_data =
+      params.content !== undefined ? params.content : post.post_data; // Maps to content
+    post.tags = params.tags !== undefined ? params.tags : post.tags; // New field
+    post.status = params.status !== undefined ? params.status : post.status; // New field
     post.updated_at = common.curDateTime();
     post.updated_by = auth.user_id;
 
     await post.save();
+
+    // Handle featured image update
+    if (file) {
+      // Delete existing featured image for this post if any
+      await db.PostFile.destroy({
+        where: {
+          post_id: post.id,
+          is_deleted: 0,
+        },
+      });
+
+      const postFile = new db.PostFile();
+      postFile.post_id = post.id;
+      postFile.original_name = file.originalname;
+      postFile.file_path = path.join("/", file.uploaded_path, file.filename); // Store relative path
+      postFile.created_at = common.curDateTime(); // Assuming created_at/by are not in model, add if needed
+      postFile.created_by = auth.user_id;
+      await postFile.save();
+    }
 
     return { message: "Post updated successfully" };
   } catch (err) {

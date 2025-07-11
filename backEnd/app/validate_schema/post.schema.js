@@ -40,9 +40,12 @@ function getPostById(req, res, next) {
 // Create Post Schema
 function createPost(req, res, next) {
   const schema = Joi.object().keys({
-    category_id: Joi.string().uuid().optional(),
+    category: Joi.string().required(), // Frontend sends category name/value
     title: Joi.string().min(1).max(255).required(),
-    post_data: Joi.string().optional(),
+    summary: Joi.string().optional().allow(""), // New field
+    content: Joi.string().optional().allow(""), // Maps to post_data
+    tags: Joi.array().items(Joi.string()).optional(), // New field
+    status: Joi.string().valid("draft", "published").optional(), // New field
   });
   validateRequest(req, res, next, schema);
 }
@@ -51,9 +54,12 @@ function createPost(req, res, next) {
 function updatePost(req, res, next) {
   const schema = Joi.object().keys({
     id: Joi.string().uuid().required(),
-    category_id: Joi.string().uuid().optional(),
+    category: Joi.string().optional(), // Frontend sends category name/value
     title: Joi.string().min(1).max(255).optional(),
-    post_data: Joi.string().optional(),
+    summary: Joi.string().optional().allow(""), // New field
+    content: Joi.string().optional().allow(""), // Maps to post_data
+    tags: Joi.array().items(Joi.string()).optional(), // New field
+    status: Joi.string().valid("draft", "published").optional(), // New field
   });
   validateRequest(req, res, next, schema);
 }

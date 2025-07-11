@@ -34,7 +34,7 @@ const navigationItems = [
 const sideMenuItems = [
   {
     name: "CREATE POST",
-    href: "/create-post",
+    href: "/create_post",
     icon: PenTool,
     requireAuth: true,
     adminOnly: true,

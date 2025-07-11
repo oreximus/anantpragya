@@ -1,78 +1,86 @@
 /**
  * Upload image handler
  */
-const fs = require('fs');
-const multer = require('multer');
-const path = require('path');
+const fs = require("fs");
+const multer = require("multer");
+const path = require("path");
 
-// To check if the given directory already exists or not
-// If it is not to create a new directory
-const checkDirectory = async (filesDir) => {
-    fs.access(filesDir, (error) => {
-        if (error) {
-            // If current directory does not exist then create it
-            fs.mkdirSync(filesDir, { recursive: true }, (error) => {
-                if (error) {
-                    console.log(error);
-                } else {
-                    fs.mkdirSync(path.join(filesDir, 'thumbs'));
-                    console.log('New Directory created successfully !!');
-                }
-            });
-        } else {
-            console.log('Given Directory already exists !!');
-        }
-    });
-    return await filesDir;
-};
 // Image to be stored in uploads
-// const storage = multer.diskStorage({
-//     destination: async function (req, file, callback) {
-//         let filesDir = path.join(__dirname, '..', 'public', 'uploads');
-//         let thumbPath = path.join(filesDir, 'thumbs');
-//         file['uploaded_path'] = path.join('uploads'); // original image path
-//         file['thumbnail'] = path.join('thumbs'); // thumbnail image path
-//         await checkDirectory(filesDir);
-//         await checkDirectory(thumbPath);
-//         callback(null, filesDir);
-//     },
-//     filename: function (req, file, callback) {
-//         callback(null, 'upload_' + Date.now() + path.extname(file.originalname))
-//     }
-// });
-const storage = multer.memoryStorage();
+const storage = multer.diskStorage({
+  destination: (req, file, callback) => {
+    const year = new Date().getFullYear();
+    const month = (new Date().getMonth() + 1).toString().padStart(2, "0");
+    const filesDir = path.join(
+      __dirname,
+      "..",
+      "public",
+      "uploads",
+      "posts",
+      String(year),
+      String(month),
+    );
+
+    // Synchronously create the directory if it doesn't exist
+    try {
+      fs.mkdirSync(filesDir, { recursive: true });
+      console.log(`Directory created or already exists: ${filesDir}`);
+    } catch (error) {
+      console.error(`Error creating directory ${filesDir}:`, error);
+      return callback(error); // Pass the error to Multer
+    }
+
+    // Store the relative path for database
+    file["uploaded_path"] = path.join(
+      "uploads",
+      "posts",
+      String(year),
+      String(month),
+    );
+    callback(null, filesDir);
+  },
+  filename: (req, file, callback) => {
+    callback(
+      null,
+      file.fieldname + "_" + Date.now() + path.extname(file.originalname),
+    );
+  },
+});
 
 // Controlling the uploaded file
 const fileFilter = (req, file, callback) => {
-    if (
-        file.mimetype === 'image/jpeg' ||
-        file.mimetype === 'image/jpg' ||
-        file.mimetype === 'image/png' ||
-        file.mimetype === 'image/webp'
-    ) {
-        callback(null, true);
-    } else {
-        callback(null, false);
-        return callback(new Error('Only .png, .webp, .jpg and .jpeg format allowed!'));
-    }
+  if (
+    file.mimetype === "image/jpeg" ||
+    file.mimetype === "image/jpg" ||
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/webp"
+  ) {
+    callback(null, true);
+  } else {
+    callback(null, false);
+    return callback(
+      new Error("Only .png, .webp, .jpg and .jpeg format allowed!"),
+    );
+  }
 };
+
 const upload = multer({
-    storage: storage,
-    fileFilter: fileFilter,
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB file size limit
 });
 
 module.exports = (name) => {
-    return (req, res, next) => {
-        const file = upload.single(name);
-        file(req, res, (err) => {
-            if (err) {
-                res.json({
-                    status: false,
-                    message: `File / Image Upload ${err}`,
-                });
-            } else {
-                next();
-            }
+  return (req, res, next) => {
+    const fileUpload = upload.single(name);
+    fileUpload(req, res, (err) => {
+      if (err) {
+        res.json({
+          status: false,
+          message: `File / Image Upload Error: ${err.message}`,
         });
-    };
+      } else {
+        next();
+      }
+    });
+  };
 };

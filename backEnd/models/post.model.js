@@ -1,10 +1,10 @@
 /**
  * The post model uses Sequelize to define the schema for the post table
  */
-const { DataTypes, Sequelize } = require("sequelize")
-const common = require("_helpers/common")
+const { DataTypes, Sequelize } = require("sequelize");
+const common = require("_helpers/common");
 
-module.exports = model
+module.exports = model;
 
 function model(sequelize) {
   const attributes = {
@@ -21,17 +21,42 @@ function model(sequelize) {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
+    summary: {
+      // New field
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     post_data: {
       type: DataTypes.TEXT,
       allowNull: true,
+    },
+    status: {
+      // New field
+      type: DataTypes.STRING(50),
+      defaultValue: "draft",
+      comment: "draft, published",
+    },
+    tags: {
+      // New field for JSON array of tags
+      type: DataTypes.TEXT,
+      allowNull: true,
+      get() {
+        const rawValue = this.getDataValue("tags");
+        return rawValue ? JSON.parse(rawValue) : [];
+      },
+      set(value) {
+        this.setDataValue("tags", JSON.stringify(value));
+      },
     },
     created_at: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       get() {
-        const rawValue = this.getDataValue("created_at")
-        return rawValue ? common.dateFormat(rawValue, "YYYY-MM-DD HH:mm:ss") : null
+        const rawValue = this.getDataValue("created_at");
+        return rawValue
+          ? common.dateFormat(rawValue, "YYYY-MM-DD HH:mm:ss")
+          : null;
       },
     },
     created_by: {
@@ -43,8 +68,10 @@ function model(sequelize) {
       allowNull: false,
       defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       get() {
-        const rawValue = this.getDataValue("updated_at")
-        return rawValue ? common.dateFormat(rawValue, "YYYY-MM-DD HH:mm:ss") : null
+        const rawValue = this.getDataValue("updated_at");
+        return rawValue
+          ? common.dateFormat(rawValue, "YYYY-MM-DD HH:mm:ss")
+          : null;
       },
     },
     updated_by: {
@@ -61,7 +88,7 @@ function model(sequelize) {
       defaultValue: 0,
       comment: "0=No, 1=Yes",
     },
-  }
+  };
 
   const options = {
     tableName: "post",
@@ -78,9 +105,9 @@ function model(sequelize) {
     timestamps: false,
     charset: "utf8mb4",
     collate: "utf8mb4_unicode_ci",
-  }
+  };
 
-  const post = sequelize.define("Post", attributes, options)
+  const post = sequelize.define("Post", attributes, options);
 
   // Associations
   post.associate = function (models) {
@@ -91,7 +118,7 @@ function model(sequelize) {
         allowNull: false,
       },
       targetKey: "id",
-    })
+    });
     this.belongsTo(models.User, {
       onDelete: "CASCADE",
       foreignKey: {
@@ -100,7 +127,7 @@ function model(sequelize) {
       },
       as: "author",
       targetKey: "id",
-    })
+    });
     this.hasMany(models.PostComment, {
       onDelete: "CASCADE",
       foreignKey: {
@@ -109,7 +136,7 @@ function model(sequelize) {
       },
       as: "comments",
       targetKey: "id",
-    })
+    });
     this.hasMany(models.PostActivity, {
       onDelete: "CASCADE",
       foreignKey: {
@@ -118,7 +145,7 @@ function model(sequelize) {
       },
       as: "activities",
       targetKey: "id",
-    })
+    });
     this.hasMany(models.PostFile, {
       onDelete: "CASCADE",
       foreignKey: {
@@ -127,8 +154,8 @@ function model(sequelize) {
       },
       as: "files",
       targetKey: "id",
-    })
-  }
+    });
+  };
 
-  return post
+  return post;
 }
