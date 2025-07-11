@@ -67,3 +67,7 @@ export const changePassword = async (passwordData) => {
     confirm_password: passwordData.confirmPassword,
   });
 };
+
+export const getAllUsers = async (params) => {
+  return await api.get("/user/list", { params });
+};

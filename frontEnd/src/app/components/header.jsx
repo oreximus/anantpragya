@@ -41,7 +41,7 @@ const sideMenuItems = [
   },
   {
     name: "ALL BLOGS",
-    href: "/get-all-blogs",
+    href: "/get_all_blogs",
     icon: FileText,
     requireAuth: true,
     adminOnly: true,
@@ -53,19 +53,6 @@ const sideMenuItems = [
     requireAuth: true,
     adminOnly: true,
   }, // New item
-  { name: "VIDEOS", hasSubmenu: true },
-  { name: "INDIA", hasSubmenu: true },
-  { name: "WEB STORIES", hasSubmenu: true },
-  { name: "ENTERTAINMENT", hasSubmenu: true },
-  { name: "SPORTS", hasSubmenu: true },
-  { name: "PHOTOS", hasSubmenu: true },
-  { name: "LIFESTYLE", hasSubmenu: true },
-  { name: "EDUCATION", hasSubmenu: true },
-  { name: "TECHNOLOGY", hasSubmenu: true },
-  { name: "BUSINESS", hasSubmenu: true },
-  { name: "WORLD", hasSubmenu: true },
-  { name: "ASTROLOGY", hasSubmenu: true },
-  { name: "HEALTH", hasSubmenu: true },
 ];
 
 export default function Header({ isMenuOpen, setIsMenuOpen }) {
@@ -317,60 +304,6 @@ export default function Header({ isMenuOpen, setIsMenuOpen }) {
           );
         })}
       </div>
-
-      {/* Quick Actions for Admin Users */}
-      {isAuthenticated && user?.role === "admin" && (
-        <div className="p-6 border-t border-gray-200 bg-gray-50">
-          <h3
-            className="text-sm font-semibold text-gray-800 mb-3"
-            style={{
-              fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
-            }}
-          >
-            एडमिन पैनल
-          </h3>
-          <div className="space-y-2">
-            <Link href="/create-post" onClick={closeMenu}>
-              <button className="w-full flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm">
-                <PenTool className="w-4 h-4" />
-                <span
-                  style={{
-                    fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
-                  }}
-                >
-                  नया लेख लिखें
-                </span>
-              </button>
-            </Link>
-            <Link href="/get-all-blogs" onClick={closeMenu}>
-              <button className="w-full flex items-center space-x-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-3 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm">
-                <FileText className="w-4 h-4" />
-                <span
-                  style={{
-                    fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
-                  }}
-                >
-                  सभी लेख प्रबंधन
-                </span>
-              </button>
-            </Link>
-            <Link href="/list_of_all_users" onClick={closeMenu}>
-              {" "}
-              {/* New Admin Panel Link */}
-              <button className="w-full flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-sm">
-                <Users className="w-4 h-4" />
-                <span
-                  style={{
-                    fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
-                  }}
-                >
-                  सभी उपयोगकर्ता प्रबंधन
-                </span>
-              </button>
-            </Link>
-          </div>
-        </div>
-      )}
     </div>
   );
 

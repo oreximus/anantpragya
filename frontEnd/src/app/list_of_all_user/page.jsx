@@ -19,82 +19,36 @@ import {
   UserX,
   Briefcase,
 } from "lucide-react";
-import { useAppSelector } from "../../lib/hooks/redux"; // Assuming this path is correct in your project
+import { useAppSelector, useAppDispatch } from "../../lib/hooks/redux";
+import {
+  fetchAllUsers,
+  deleteUserSuccess,
+} from "../../lib/features/auth/authSlice"; // Import the new thunk and action
 
 export default function ListOfAllUsers() {
-  const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [selectedRole, setSelectedRole] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("registrationDate");
-  const [isLoading, setIsLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
 
   const router = useRouter();
-  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+  const {
+    isAuthenticated,
+    user,
+    usersList,
+    usersListLoading,
+    usersListError,
+    usersTotal,
+  } = useAppSelector((state) => state.auth);
 
   const roles = [
     { value: "all", label: "सभी भूमिकाएं" },
     { value: "admin", label: "व्यवस्थापक" },
-    { value: "editor", label: "संपादक" },
-    { value: "viewer", label: "दर्शक" },
     { value: "member", label: "सदस्य" },
-  ];
-
-  // Sample user data - in real app, this would come from API
-  const sampleUsers = [
-    {
-      id: 1,
-      name: "अमन कुमार",
-      email: "aman.kumar@example.com",
-      role: "admin",
-      status: "active",
-      registrationDate: "2023-01-15",
-      lastLogin: "2024-07-10",
-      image: "/placeholder.svg?height=50&width=50",
-    },
-    {
-      id: 2,
-      name: "भावना शर्मा",
-      email: "bhavna.sharma@example.com",
-      role: "editor",
-      status: "active",
-      registrationDate: "2023-03-20",
-      lastLogin: "2024-07-09",
-      image: "/placeholder.svg?height=50&width=50",
-    },
-    {
-      id: 3,
-      name: "चंदन सिंह",
-      email: "chandan.singh@example.com",
-      role: "viewer",
-      status: "inactive",
-      registrationDate: "2023-05-01",
-      lastLogin: "2024-06-25",
-      image: "/placeholder.svg?height=50&width=50",
-    },
-    {
-      id: 4,
-      name: "दीपांजलि वर्मा",
-      email: "deepanjali.v@example.com",
-      role: "member",
-      status: "active",
-      registrationDate: "2023-07-10",
-      lastLogin: "2024-07-11",
-      image: "/placeholder.svg?height=50&width=50",
-    },
-    {
-      id: 5,
-      name: "एकता गुप्ता",
-      email: "ekta.gupta@example.com",
-      role: "member",
-      status: "pending",
-      registrationDate: "2024-01-05",
-      lastLogin: null,
-      image: "/placeholder.svg?height=50&width=50",
-    },
   ];
 
   useEffect(() => {
@@ -104,35 +58,35 @@ export default function ListOfAllUsers() {
       return;
     }
 
-    // Simulate API call
-    setIsLoading(true);
-    setTimeout(() => {
-      setUsers(sampleUsers);
-      setFilteredUsers(sampleUsers);
-      setIsLoading(false);
-    }, 1000);
-  }, [isAuthenticated, user, router]);
+    // Fetch users from API
+    const params = {
+      page: 1, // Assuming a single page for now, or add pagination state
+      limit: 100, // Fetch a reasonable limit to allow client-side filtering
+      search: searchQuery,
+    };
+    dispatch(fetchAllUsers(params));
+  }, [isAuthenticated, user, router, dispatch, searchQuery]); // Re-fetch when search query changes
 
   useEffect(() => {
-    let filtered = users;
+    let currentUsers = [...usersList]; // Use usersList from Redux store
 
-    // Filter by role
+    // Client-side filtering by role
     if (selectedRole !== "all") {
-      filtered = filtered.filter((user) => user.role === selectedRole);
+      currentUsers = currentUsers.filter((u) => u.role === selectedRole);
     }
 
-    // Filter by search query
+    // Filter by search query (already passed to API, but also apply client-side for robustness if API search is limited)
     if (searchQuery) {
-      filtered = filtered.filter(
-        (user) =>
-          user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          user.role.toLowerCase().includes(searchQuery.toLowerCase())
+      currentUsers = currentUsers.filter(
+        (u) =>
+          u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          u.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          u.role.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     // Sort users
-    filtered = [...filtered].sort((a, b) => {
+    currentUsers = [...currentUsers].sort((a, b) => {
       switch (sortBy) {
         case "registrationDate":
           return new Date(b.registrationDate) - new Date(a.registrationDate);
@@ -147,8 +101,8 @@ export default function ListOfAllUsers() {
       }
     });
 
-    setFilteredUsers(filtered);
-  }, [users, selectedRole, searchQuery, sortBy]);
+    setFilteredUsers(currentUsers);
+  }, [usersList, selectedRole, searchQuery, sortBy]); // Re-filter when usersList or filter/sort criteria change
 
   const handleDeleteUser = (user) => {
     setUserToDelete(user);
@@ -158,7 +112,9 @@ export default function ListOfAllUsers() {
 
   const confirmDelete = () => {
     if (userToDelete) {
-      setUsers(users.filter((user) => user.id !== userToDelete.id));
+      // In a real application, you would dispatch an action to delete the user via API
+      // For now, simulate deletion from the local state (usersList)
+      dispatch(deleteUserSuccess(userToDelete.id)); // Simulate deletion
       setShowDeleteModal(false);
       setUserToDelete(null);
     }
@@ -178,7 +134,7 @@ export default function ListOfAllUsers() {
             निष्क्रिय
           </span>
         );
-      case "pending":
+      case "pending": // Keep pending for consistency, though API doesn't directly provide it
         return (
           <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
             लंबित
@@ -218,10 +174,31 @@ export default function ListOfAllUsers() {
     );
   }
 
-  if (isLoading) {
+  if (usersListLoading) {
+    // Use usersListLoading from Redux
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (usersListError) {
+    // Display error if fetching failed
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">त्रुटि</h1>
+          <p className="text-gray-600 mb-6">
+            उपयोगकर्ताओं को लोड करने में त्रुटि हुई: {usersListError}
+          </p>
+          <button
+            onClick={() => dispatch(fetchAllUsers({ page: 1, limit: 100 }))} // Retry fetching
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            पुनः प्रयास करें
+          </button>
+        </div>
       </div>
     );
   }
@@ -265,7 +242,7 @@ export default function ListOfAllUsers() {
               <div>
                 <p className="text-sm text-gray-600">कुल उपयोगकर्ता</p>
                 <p className="text-2xl font-bold text-gray-800">
-                  {users.length}
+                  {usersTotal} {/* Use usersTotal from Redux */}
                 </p>
               </div>
               <Users className="w-8 h-8 text-blue-600" />
@@ -276,7 +253,7 @@ export default function ListOfAllUsers() {
               <div>
                 <p className="text-sm text-gray-600">सक्रिय</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {users.filter((user) => user.status === "active").length}
+                  {usersList.filter((u) => u.status === "active").length}
                 </p>
               </div>
               <UserCheck className="w-8 h-8 text-green-600" />
@@ -287,7 +264,7 @@ export default function ListOfAllUsers() {
               <div>
                 <p className="text-sm text-gray-600">निष्क्रिय</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  {users.filter((user) => user.status === "inactive").length}
+                  {usersList.filter((u) => u.status === "inactive").length}
                 </p>
               </div>
               <UserX className="w-8 h-8 text-yellow-600" />
@@ -298,7 +275,7 @@ export default function ListOfAllUsers() {
               <div>
                 <p className="text-sm text-gray-600">कुल भूमिकाएं</p>
                 <p className="text-2xl font-bold text-purple-600">
-                  {new Set(users.map((user) => user.role)).size}
+                  {new Set(usersList.map((u) => u.role)).size}
                 </p>
               </div>
               <Briefcase className="w-8 h-8 text-purple-600" />
@@ -364,7 +341,7 @@ export default function ListOfAllUsers() {
             {/* Results Count */}
             <div className="flex items-center justify-center bg-gray-50 rounded-lg px-4 py-3">
               <span className="text-sm text-gray-600">
-                {filteredUsers.length} में से {users.length} उपयोगकर्ता
+                {filteredUsers.length} में से {usersTotal} उपयोगकर्ता
               </span>
             </div>
           </div>

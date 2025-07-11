@@ -10,6 +10,22 @@ const transformUserData = (userData) => {
   };
 };
 
+// Helper function to transform a list of users from API response
+const transformUserList = (userList) => {
+  if (!Array.isArray(userList)) return [];
+  return userList.map((user) => ({
+    id: user.id,
+    name: `${user.first_name} ${user.last_name}`,
+    email: user.email,
+    role: user.is_admin === 1 ? "admin" : "member", // Map is_admin to role
+    status: user.is_active === 1 ? "active" : "inactive", // Map is_active to status
+    registrationDate: user.created_at,
+    lastLogin: user.updated_at, // Using updated_at as a proxy for lastLogin
+    image: "/placeholder.svg?height=50&width=50", // Placeholder image
+    phone: user.phone_no,
+  }));
+};
+
 // Register User
 export const registerUser = createAsyncThunk(
   "auth/register",
@@ -172,6 +188,22 @@ export const changePassword = createAsyncThunk(
   }
 );
 
+// Fetch All Users
+export const fetchAllUsers = createAsyncThunk(
+  "auth/fetchAllUsers",
+  async (params, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.getAllUsers(params);
+      const transformedData = transformUserList(response.data.data);
+      return { ...response.data, data: transformedData };
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || { message: "Failed to fetch users" }
+      );
+    }
+  }
+);
+
 const initialState = {
   user: null,
   isAuthenticated: false,
@@ -182,6 +214,10 @@ const initialState = {
   passwordResetSent: false,
   profileLoading: false,
   passwordChangeLoading: false,
+  usersList: [], // New state for list of users
+  usersListLoading: false, // Loading state for user list
+  usersListError: null, // Error state for user list
+  usersTotal: 0, // Total count of users
 };
 
 const authSlice = createSlice({
@@ -190,6 +226,7 @@ const authSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
+      state.usersListError = null; // Clear user list error too
     },
     clearMessage: (state) => {
       state.message = null;
@@ -199,6 +236,8 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.error = null;
       state.message = null;
+      state.usersList = []; // Clear user list on logout
+      state.usersTotal = 0;
       localStorage.removeItem("access_token");
       localStorage.removeItem("user_data");
     },
@@ -206,6 +245,14 @@ const authSlice = createSlice({
       // Ensure user data loaded from localStorage is also transformed
       state.user = transformUserData(action.payload);
       state.isAuthenticated = true;
+    },
+    // New reducer for simulating user deletion
+    deleteUserSuccess: (state, action) => {
+      state.usersList = state.usersList.filter(
+        (user) => user.id !== action.payload
+      );
+      state.usersTotal = state.usersTotal - 1;
+      state.message = "User deleted successfully (simulated)";
     },
   },
   extraReducers: (builder) => {
@@ -345,9 +392,27 @@ const authSlice = createSlice({
       .addCase(changePassword.rejected, (state, action) => {
         state.passwordChangeLoading = false;
         state.error = action.payload?.message || "Password change failed";
+      })
+
+      // Fetch All Users
+      .addCase(fetchAllUsers.pending, (state) => {
+        state.usersListLoading = true;
+        state.usersListError = null;
+      })
+      .addCase(fetchAllUsers.fulfilled, (state, action) => {
+        state.usersListLoading = false;
+        state.usersList = action.payload.data;
+        state.usersTotal = action.payload.total; // Assuming 'total' field exists in API response
+        state.message = action.payload.message;
+      })
+      .addCase(fetchAllUsers.rejected, (state, action) => {
+        state.usersListLoading = false;
+        state.usersListError =
+          action.payload?.message || "Failed to fetch users";
       });
   },
 });
 
-export const { clearError, clearMessage, logout, setUser } = authSlice.actions;
+export const { clearError, clearMessage, logout, setUser, deleteUserSuccess } =
+  authSlice.actions;
 export default authSlice.reducer;
