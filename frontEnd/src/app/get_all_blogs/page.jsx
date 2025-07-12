@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -19,161 +19,180 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
-import { useAppSelector } from "../../lib/hooks/redux";
+import { useAppSelector, useAppDispatch } from "../../lib/hooks/redux";
+import {
+  fetchCategories, // Import fetchCategories
+  fetchPosts, // Import fetchPosts
+  clearError,
+  clearMessage,
+} from "../../lib/features/auth/authSlice";
 
 export default function GetAllBlogs() {
-  const [blogs, setBlogs] = useState([]);
-  const [filteredBlogs, setFilteredBlogs] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("date");
-  const [isLoading, setIsLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [blogToDelete, setBlogToDelete] = useState(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 10;
 
   const router = useRouter();
-  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const dispatch = useAppDispatch();
+  const {
+    isAuthenticated,
+    user,
+    categoriesList,
+    categoriesLoading,
+    categoriesError,
+    postsList, // Get posts from Redux
+    postsTotal, // Get total posts count
+    postsLoading, // Get posts loading state
+    postsError, // Get posts error state
+    message,
+    error,
+  } = useAppSelector((state) => state.auth);
 
-  const categories = [
-    { value: "all", label: "सभी श्रेणियां" },
-    { value: "inspirational", label: "प्रेरणादायक" },
-    { value: "believe", label: "विश्वास" },
-    { value: "guidance", label: "मार्गदर्शन" },
-    { value: "hard_work", label: "कड़ी मेहनत" },
-    { value: "health", label: "स्वास्थ्य" },
-    { value: "habits", label: "आदतें" },
-    { value: "big_dreams", label: "बड़े सपने" },
-    { value: "relationship", label: "संबंध" },
-    { value: "decision_process", label: "निर्णय प्रक्रिया" },
-    { value: "spiritual", label: "आध्यात्मिक" },
-    { value: "meditation", label: "ध्यान" },
-    { value: "yoga", label: "योग" },
-    { value: "lifestyle", label: "जीवनशैली" },
-  ];
-
-  // Sample blog data - in real app, this would come from API
-  const sampleBlogs = [
-    {
-      id: 1,
-      title: "सफलता की राह में बाधाएं",
-      summary: "जीवन में आने वाली चुनौतियों को कैसे अवसर में बदलें।",
-      category: "inspirational",
-      author: "प्रेरणा गुरु",
-      date: "2024-12-30",
-      readTime: "8 मिनट",
-      status: "published",
-      views: 1250,
-      likes: 89,
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 2,
-      title: "विश्वास की अटूट शक्ति",
-      summary:
-        "जब आप खुद पर विश्वास करते हैं, तो पूरी दुनिया आपका साथ देती है।",
-      category: "believe",
-      author: "विश्वास गुरु",
-      date: "2024-12-28",
-      readTime: "9 मिनट",
-      status: "published",
-      views: 980,
-      likes: 67,
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 3,
-      title: "मेहनत का फल मीठा होता है",
-      summary: "कड़ी मेहनत ही सफलता की कुंजी है।",
-      category: "hard_work",
-      author: "सफलता गुरु",
-      date: "2024-12-25",
-      readTime: "10 मिनट",
-      status: "draft",
-      views: 0,
-      likes: 0,
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 4,
-      title: "स्वस्थ जीवनशैली के नियम",
-      summary: "स्वस्थ रहने के लिए अपनाएं ये सरल नियम।",
-      category: "health",
-      author: "हेल्थ एक्सपर्ट",
-      date: "2024-12-22",
-      readTime: "12 मिनट",
-      status: "published",
-      views: 1500,
-      likes: 120,
-      image: "/placeholder.svg?height=200&width=300",
-    },
-    {
-      id: 5,
-      title: "21 दिन में नई आदत बनाएं",
-      summary: "वैज्ञानिक तरीके से नई आदतें कैसे बनाएं।",
-      category: "habits",
-      author: "हैबिट कोच",
-      date: "2024-12-20",
-      readTime: "15 मिनट",
-      status: "published",
-      views: 2100,
-      likes: 156,
-      image: "/placeholder.svg?height=200&width=300",
-    },
-  ];
-
+  // Effect to fetch categories only once on component mount or when auth state changes
   useEffect(() => {
-    // Check if user is admin
+    if (isAuthenticated && user?.role === "admin") {
+      dispatch(fetchCategories());
+    }
+  }, [isAuthenticated, user, dispatch]);
+
+  // Memoized function to fetch posts based on current filters and pagination
+  const fetchPostsWithFilters = useCallback(() => {
     if (!isAuthenticated || user?.role !== "admin") {
-      router.push("/");
+      // This check is already handled by the top-level return, but good for clarity.
       return;
     }
 
-    // Simulate API call
-    setIsLoading(true);
-    setTimeout(() => {
-      setBlogs(sampleBlogs);
-      setFilteredBlogs(sampleBlogs);
-      setIsLoading(false);
-    }, 1000);
-  }, [isAuthenticated, user, router]);
+    // If categories are still loading and a specific category is selected, wait.
+    // This prevents fetching posts with an invalid categoryId.
+    if (
+      selectedCategory !== "all" &&
+      categoriesList.length === 0 &&
+      categoriesLoading
+    ) {
+      return;
+    }
 
+    const categoryId =
+      selectedCategory === "all"
+        ? undefined
+        : categoriesList.find((cat) => cat.name === selectedCategory)?.id;
+
+    dispatch(
+      fetchPosts({
+        page: currentPage,
+        limit: postsPerPage,
+        search: searchQuery,
+        category_id: categoryId,
+      })
+    );
+  }, [
+    isAuthenticated,
+    user,
+    dispatch,
+    selectedCategory, // Trigger re-fetch when category filter changes
+    searchQuery, // Trigger re-fetch when search query changes
+    currentPage, // Trigger re-fetch when page changes
+    categoriesList, // Trigger re-fetch if categoriesList changes (e.g., after initial load)
+    categoriesLoading, // Ensure we don't try to use categoriesList before it's potentially loaded
+  ]);
+
+  // Effect to trigger fetching posts whenever filters or pagination change
   useEffect(() => {
-    let filtered = blogs;
+    fetchPostsWithFilters();
+  }, [fetchPostsWithFilters]); // Dependency: the memoized function itself
 
-    // Filter by category
-    if (selectedCategory !== "all") {
-      filtered = filtered.filter((blog) => blog.category === selectedCategory);
+  // Effect to clear messages/errors after a short delay
+  useEffect(() => {
+    if (message || error) {
+      const timer = setTimeout(() => {
+        dispatch(clearMessage());
+        dispatch(clearError());
+      }, 3000);
+      return () => clearTimeout(timer);
     }
+  }, [message, error, dispatch]);
 
-    // Filter by search query
-    if (searchQuery) {
-      filtered = filtered.filter(
-        (blog) =>
-          blog.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          blog.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          blog.author.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+  // Handlers for filter changes that should reset pagination
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
+    setCurrentPage(1); // Reset page when category changes
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1); // Reset page when search query changes
+  };
+
+  const handleSearchSubmit = () => {
+    setCurrentPage(1); // Ensure search starts from page 1
+    fetchPostsWithFilters(); // Manually trigger fetch on search submit
+  };
+
+  if (!isAuthenticated || user?.role !== "admin") {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+            अनधिकृत पहुंच
+          </h1>
+          <p className="text-gray-600 mb-6">
+            आपके पास इस पृष्ठ तक पहुंचने की अनुमति नहीं है।
+          </p>
+          <Link href="/">
+            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+              मुख्य पृष्ठ पर जाएं
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (postsLoading || categoriesLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (postsError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center text-red-600">
+          <h1 className="text-2xl font-bold mb-4">त्रुटि</h1>
+          <p className="text-lg">{postsError}</p>
+          <button
+            onClick={() => dispatch(clearError())}
+            className="mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            पुनः प्रयास करें
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Apply client-side sorting to the fetched postsList
+  const sortedPosts = [...postsList].sort((a, b) => {
+    switch (sortBy) {
+      case "date":
+        return new Date(b.date) - new Date(a.date);
+      case "title":
+        return a.title.localeCompare(b.title);
+      case "views":
+        return b.views - a.views;
+      case "likes":
+        return b.likes - a.likes;
+      default:
+        return 0;
     }
-
-    // Sort blogs
-    filtered = [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case "date":
-          return new Date(b.date) - new Date(a.date);
-        case "title":
-          return a.title.localeCompare(b.title);
-        case "views":
-          return b.views - a.views;
-        case "likes":
-          return b.likes - a.likes;
-        default:
-          return 0;
-      }
-    });
-
-    setFilteredBlogs(filtered);
-  }, [blogs, selectedCategory, searchQuery, sortBy]);
+  });
 
   const handleDeleteBlog = (blog) => {
     setBlogToDelete(blog);
@@ -183,9 +202,13 @@ export default function GetAllBlogs() {
 
   const confirmDelete = () => {
     if (blogToDelete) {
-      setBlogs(blogs.filter((blog) => blog.id !== blogToDelete.id));
+      // In a real app, dispatch an action to delete the blog via API
+      // For now, simulate deletion from the Redux state (if postsList was mutable)
+      // After actual deletion, you would re-fetch the posts:
+      console.log(`Simulating deletion of blog with ID: ${blogToDelete.id}`);
       setShowDeleteModal(false);
       setBlogToDelete(null);
+      fetchPostsWithFilters(); // Re-fetch posts after deletion
     }
   };
 
@@ -213,37 +236,9 @@ export default function GetAllBlogs() {
   };
 
   const getCategoryLabel = (categoryValue) => {
-    const category = categories.find((cat) => cat.value === categoryValue);
-    return category ? category.label : categoryValue;
+    const category = categoriesList.find((cat) => cat.name === categoryValue);
+    return category ? category.name : categoryValue;
   };
-
-  if (!isAuthenticated || user?.role !== "admin") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">
-            अनधिकृत पहुंच
-          </h1>
-          <p className="text-gray-600 mb-6">
-            आपके पास इस पृष्ठ तक पहुंचने की अनुमति नहीं है।
-          </p>
-          <Link href="/">
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
-              मुख्य पृष्ठ पर जाएं
-            </button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
@@ -269,7 +264,7 @@ export default function GetAllBlogs() {
             </h1>
           </div>
 
-          <Link href="/create-post">
+          <Link href="/create_post">
             <button className="flex items-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all transform hover:scale-105 shadow-lg">
               <Plus className="w-5 h-5" />
               <span>नया लेख लिखें</span>
@@ -283,9 +278,7 @@ export default function GetAllBlogs() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">कुल लेख</p>
-                <p className="text-2xl font-bold text-gray-800">
-                  {blogs.length}
-                </p>
+                <p className="text-2xl font-bold text-gray-800">{postsTotal}</p>
               </div>
               <FileText className="w-8 h-8 text-blue-600" />
             </div>
@@ -295,7 +288,10 @@ export default function GetAllBlogs() {
               <div>
                 <p className="text-sm text-gray-600">प्रकाशित</p>
                 <p className="text-2xl font-bold text-green-600">
-                  {blogs.filter((blog) => blog.status === "published").length}
+                  {
+                    postsList.filter((blog) => blog.status === "published")
+                      .length
+                  }
                 </p>
               </div>
               <Eye className="w-8 h-8 text-green-600" />
@@ -306,7 +302,7 @@ export default function GetAllBlogs() {
               <div>
                 <p className="text-sm text-gray-600">ड्राफ्ट</p>
                 <p className="text-2xl font-bold text-yellow-600">
-                  {blogs.filter((blog) => blog.status === "draft").length}
+                  {postsList.filter((blog) => blog.status === "draft").length}
                 </p>
               </div>
               <Edit className="w-8 h-8 text-yellow-600" />
@@ -317,7 +313,7 @@ export default function GetAllBlogs() {
               <div>
                 <p className="text-sm text-gray-600">कुल व्यूज</p>
                 <p className="text-2xl font-bold text-purple-600">
-                  {blogs
+                  {postsList
                     .reduce((total, blog) => total + blog.views, 0)
                     .toLocaleString()}
                 </p>
@@ -337,7 +333,11 @@ export default function GetAllBlogs() {
                 type="text"
                 placeholder="लेख खोजें..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={handleSearchChange}
+                onBlur={handleSearchSubmit} // Trigger fetch on blur
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSearchSubmit();
+                }} // Trigger fetch on Enter
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-black"
                 style={{
                   fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
@@ -350,15 +350,16 @@ export default function GetAllBlogs() {
               <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
               <select
                 value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
+                onChange={handleCategoryChange}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-black appearance-none"
                 style={{
                   fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
                 }}
               >
-                {categories.map((category) => (
-                  <option key={category.value} value={category.value}>
-                    {category.label}
+                <option value="all">सभी श्रेणियां</option>
+                {categoriesList.map((category) => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
                   </option>
                 ))}
               </select>
@@ -385,7 +386,7 @@ export default function GetAllBlogs() {
             {/* Results Count */}
             <div className="flex items-center justify-center bg-gray-50 rounded-lg px-4 py-3">
               <span className="text-sm text-gray-600">
-                {filteredBlogs.length} में से {blogs.length} लेख
+                {sortedPosts.length} में से {postsTotal} लेख
               </span>
             </div>
           </div>
@@ -393,7 +394,7 @@ export default function GetAllBlogs() {
 
         {/* Blogs Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredBlogs.map((blog) => (
+          {sortedPosts.map((blog) => (
             <div
               key={blog.id}
               className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all border border-gray-100 overflow-hidden group"
@@ -418,7 +419,7 @@ export default function GetAllBlogs() {
                       }
                       className="bg-white/90 hover:bg-white p-2 rounded-full transition-colors"
                     >
-                      <MoreVertical className="w-4 h-4 text-gray-600" />
+                      <MoreVertical className="w-4 h-4" />
                     </button>
                     {activeDropdown === blog.id && (
                       <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
@@ -517,7 +518,7 @@ export default function GetAllBlogs() {
         </div>
 
         {/* Empty State */}
-        {filteredBlogs.length === 0 && (
+        {sortedPosts.length === 0 && (
           <div className="text-center py-12">
             <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-800 mb-2">
@@ -530,10 +531,35 @@ export default function GetAllBlogs() {
               onClick={() => {
                 setSelectedCategory("all");
                 setSearchQuery("");
+                setCurrentPage(1);
+                // No need to call fetchPostsWithFilters here, as state updates will trigger it via useEffect
               }}
               className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
             >
               फिल्टर साफ़ करें
+            </button>
+          </div>
+        )}
+
+        {/* Pagination (Basic example, can be expanded) */}
+        {postsTotal > postsPerPage && (
+          <div className="flex justify-center mt-8 space-x-4">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              पिछला
+            </button>
+            <span className="flex items-center text-gray-700">
+              पृष्ठ {currentPage} का {Math.ceil(postsTotal / postsPerPage)}
+            </span>
+            <button
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+              disabled={currentPage * postsPerPage >= postsTotal}
+              className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              अगला
             </button>
           </div>
         )}

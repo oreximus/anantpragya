@@ -71,3 +71,19 @@ export const changePassword = async (passwordData) => {
 export const getAllUsers = async (params) => {
   return await api.get("/user/list", { params });
 };
+
+export const getCategories = async () => {
+  return await api.get("/post/categories");
+};
+
+export const createPost = async (postData) => {
+  return await api.post("/post/create", postData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+export const getPosts = async (params) => {
+  return await api.get("/post/list", { params });
+};

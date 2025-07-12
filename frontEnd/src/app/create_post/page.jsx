@@ -15,7 +15,13 @@ import {
   X,
   Plus,
 } from "lucide-react";
-import { useAppSelector } from "../../lib/hooks/redux";
+import { useAppSelector, useAppDispatch } from "../../lib/hooks/redux";
+import {
+  fetchCategories, // Import new thunk
+  createPost, // Import new thunk
+  clearError, // Import clearError
+  clearMessage, // Import clearMessage
+} from "../../lib/features/auth/authSlice";
 
 export default function CreatePost() {
   const [formData, setFormData] = useState({
@@ -33,29 +39,29 @@ export default function CreatePost() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const router = useRouter();
-  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
-
-  const categories = [
-    { value: "inspirational", label: "प्रेरणादायक" },
-    { value: "believe", label: "विश्वास" },
-    { value: "guidance", label: "मार्गदर्शन" },
-    { value: "hard_work", label: "कड़ी मेहनत" },
-    { value: "health", label: "स्वास्थ्य" },
-    { value: "habits", label: "आदतें" },
-    { value: "big_dreams", label: "बड़े सपने" },
-    { value: "relationship", label: "संबंध" },
-    { value: "decision_process", label: "निर्णय प्रक्रिया" },
-    { value: "spiritual", label: "आध्यात्मिक" },
-    { value: "meditation", label: "ध्यान" },
-    { value: "yoga", label: "योग" },
-    { value: "lifestyle", label: "जीवनशैली" },
-  ];
+  const dispatch = useAppDispatch();
+  const {
+    isAuthenticated,
+    user,
+    categoriesList, // Get categories from Redux
+    categoriesLoading, // Get categories loading state
+    categoriesError, // Get categories error state
+    postCreationLoading, // Get post creation loading state
+    error, // General error from authSlice
+    message, // General message from authSlice
+  } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
     if (!isAuthenticated) {
       router.push("/login");
+      return;
     }
-  }, [isAuthenticated, router]);
+    // Fetch categories when component mounts
+    dispatch(fetchCategories());
+    // Clear any previous errors/messages
+    dispatch(clearError());
+    dispatch(clearMessage());
+  }, [isAuthenticated, router, dispatch]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -107,38 +113,47 @@ export default function CreatePost() {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, statusOverride = null) => {
     e.preventDefault();
     setIsSubmitting(true);
+    dispatch(clearError()); // Clear previous errors before new submission
+    dispatch(clearMessage()); // Clear previous messages
+
+    const currentStatus = statusOverride || formData.status;
+
+    // Create FormData object for file upload
+    const formDataToSend = new FormData();
+    formDataToSend.append("title", formData.title);
+    formDataToSend.append("summary", formData.summary);
+    formDataToSend.append("content", formData.content);
+    formDataToSend.append("category", formData.category);
+    formData.tags.forEach((tag) => formDataToSend.append("tags[]", tag)); // Append tags as an array
+    if (formData.featuredImage) {
+      formDataToSend.append("featuredImage", formData.featuredImage);
+    }
+    formDataToSend.append("status", currentStatus); // Use currentStatus
 
     try {
-      // Here you would typically send the data to your API
-      console.log("Post data:", formData);
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
+      await dispatch(createPost(formDataToSend)).unwrap();
       alert("लेख सफलतापूर्वक सहेजा गया!");
       router.push("/blogs");
-    } catch (error) {
-      console.error("Error creating post:", error);
-      alert("लेख सहेजने में त्रुटि हुई। कृपया पुनः प्रयास करें।");
+    } catch (err) {
+      console.error("Error creating post:", err);
+      // Error message will be set in Redux state by the thunk
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleSaveDraft = async () => {
-    setFormData((prev) => ({ ...prev, status: "draft" }));
-    handleSubmit();
+  const handleSaveDraft = (e) => {
+    handleSubmit(e, "draft");
   };
 
-  const handlePublish = async () => {
-    setFormData((prev) => ({ ...prev, status: "published" }));
-    handleSubmit();
+  const handlePublish = (e) => {
+    handleSubmit(e, "published");
   };
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || categoriesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -189,6 +204,20 @@ export default function CreatePost() {
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
+
+              {/* Success Message */}
+              {message && (
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-600 text-sm">{message}</p>
+                </div>
+              )}
+
               {/* Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -247,13 +276,18 @@ export default function CreatePost() {
                       required
                     >
                       <option value="">श्रेणी चुनें</option>
-                      {categories.map((category) => (
-                        <option key={category.value} value={category.value}>
-                          {category.label}
+                      {categoriesList.map((category) => (
+                        <option key={category.id} value={category.name}>
+                          {category.name}
                         </option>
                       ))}
                     </select>
                   </div>
+                  {categoriesError && (
+                    <p className="text-red-600 text-xs mt-1">
+                      श्रेणियां लोड करने में त्रुटि: {categoriesError}
+                    </p>
+                  )}
                 </div>
 
                 {/* Tags */}
@@ -370,7 +404,7 @@ export default function CreatePost() {
                 <button
                   type="button"
                   onClick={handleSaveDraft}
-                  disabled={isSubmitting}
+                  disabled={postCreationLoading}
                   className="flex-1 flex items-center justify-center space-x-2 bg-gray-600 text-white py-3 rounded-lg font-medium hover:bg-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Save className="w-5 h-5" />
@@ -380,14 +414,14 @@ export default function CreatePost() {
                   type="button"
                   onClick={handlePublish}
                   disabled={
-                    isSubmitting ||
+                    postCreationLoading ||
                     !formData.title ||
                     !formData.content ||
                     !formData.category
                   }
                   className="flex-1 flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSubmitting ? (
+                  {postCreationLoading ? (
                     <>
                       <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                       <span>प्रकाशित हो रहा है...</span>
@@ -428,9 +462,9 @@ export default function CreatePost() {
                   <div className="mb-4">
                     <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm font-medium">
                       {
-                        categories.find(
-                          (cat) => cat.value === formData.category
-                        )?.label
+                        categoriesList.find(
+                          (cat) => cat.name === formData.category
+                        )?.name
                       }
                     </span>
                   </div>
