@@ -31,20 +31,14 @@ app.use(express.urlencoded({ extended: true, limit: "5mb" }));
 app.use(
   helmet({
     crossOriginResourcePolicy: false,
-  })
+  }),
 );
 app.use(ipHandler);
 
 // using bodyParser to parse JSON bodies into JS objects && application/xwww
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(
-  cors({
-    origin: "http://localhost:3000", // Allow only your frontend
-    methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
-    allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
-  })
-);
+
 // for parsing multipart / form-data
 app.use(processImage());
 app.use(express.static(path.join(__dirname, "public")));
@@ -59,7 +53,7 @@ app.use(
     origin: "http://localhost:3000", // Allow only your frontend
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed methods
     allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
-  })
+  }),
 );
 
 // Global error handler
@@ -82,6 +76,6 @@ server.listen(port, () => {
     process.env.NODE_ENV,
     process.env.NODE_ENV === "production" ? "https" : "http",
     hostname,
-    port
+    port,
   );
 });

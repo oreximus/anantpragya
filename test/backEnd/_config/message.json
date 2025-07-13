@@ -1,0 +1,36 @@
+{
+  "auth": {
+    "register": "Registration successful, please check your email",
+    "emailVerify": "Email verification successful, you can now login",
+    "login": "Login successful",
+    "refreshToken": "Token refreshed successfully",
+    "revokeToken": "Token revoked",
+    "forgotPassword": "Please check your email for password reset instructions",
+    "validateResetToken": "Token is valid",
+    "resetPassword": "Password reset successful, you can now login",
+    "changePassword": "Password changed successfully",
+    "tokenRequired": "Token is required",
+    "unauthorized": "Unauthorized"
+  },
+  "user": {
+    "list": "User list fetched successfully",
+    "fetch": "User fetched successfully",
+    "create": "User created successfully",
+    "update": "User updated successfully",
+    "delete": "User deleted successfully",
+    "statusUpdate": "User status updated successfully"
+  },
+  "category": {
+    "fetch": "Post categories fetched successfully"
+  },
+  "post": {
+    "list": "Post list fetched successfully",
+    "fetch": "Post fetched successfully",
+    "create": "Post created successfully",
+    "update": "Post updated successfully",
+    "delete": "Post deleted successfully",
+    "like": "Post liked/unliked successfully",
+    "comment": "Comment added successfully",
+    "comments": "Post comments fetched successfully"
+  }
+}
