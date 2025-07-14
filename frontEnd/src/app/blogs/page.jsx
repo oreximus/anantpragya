@@ -1,3 +1,5 @@
+"use client";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -9,6 +11,8 @@ import {
   User,
   Calendar,
 } from "lucide-react";
+import { useAppSelector, useAppDispatch } from "../../lib/hooks/redux";
+import { fetchPosts, clearError } from "../../lib/features/auth/authSlice";
 
 const features = [
   {
@@ -37,78 +41,66 @@ const features = [
   },
 ];
 
-const articles = [
-  {
-    title: "आत्मा की शांति",
-    summary:
-      "आत्मा की शांति कैसे प्राप्त करें। जीवन की भागदौड़ में मन को शांत रखने के सरल और प्रभावी तरीके।",
-    excerpt: "जीवन की भागदौड़ में शांति पाने के सरल उपाय...",
-    id: 1,
-    category: "आध्यात्म",
-    readTime: "5 मिनट",
-    author: "गुरु जी",
-    date: "15 दिसंबर 2024",
-  },
-  {
-    title: "ध्यान का महत्व",
-    summary:
-      "ध्यान से जीवन में सकारात्मकता कैसे लाएं। दैनिक ध्यान के फायदे और सही तरीके।",
-    excerpt: "ध्यान से जीवन में सकारात्मकता कैसे लाएं...",
-    id: 2,
-    category: "ध्यान",
-    readTime: "7 मिनट",
-    author: "आचार्य जी",
-    date: "12 दिसंबर 2024",
-  },
-  {
-    title: "सकारात्मक सोच",
-    summary:
-      "सकारात्मक सोच से जीवन में बदलाव। नकारात्मक विचारों को सकारात्मक में कैसे बदलें।",
-    excerpt: "सकारात्मक सोच से जीवन में बदलाव लाने के तरीके...",
-    id: 3,
-    category: "प्रेरणा",
-    readTime: "6 मिनट",
-    author: "पंडित जी",
-    date: "10 दिसंबर 2024",
-  },
-  {
-    title: "योग और जीवन",
-    summary:
-      "योग के माध्यम से स्वस्थ और खुशहाल जीवन। योग के शारीरिक और मानसिक लाभ।",
-    excerpt: "योग के माध्यम से स्वस्थ जीवन जीने के तरीके...",
-    id: 4,
-    category: "योग",
-    readTime: "8 मिनट",
-    author: "योग गुरु",
-    date: "8 दिसंबर 2024",
-  },
-  {
-    title: "आत्म-चिंतन की शक्ति",
-    summary:
-      "आत्म-चिंतन से व्यक्तित्व विकास। अपने अंदर झांकने और खुद को समझने के तरीके।",
-    excerpt: "आत्म-चिंतन से व्यक्तित्व विकास के उपाय...",
-    id: 5,
-    category: "आत्म-विकास",
-    readTime: "9 मिनट",
-    author: "दार्शनिक जी",
-    date: "5 दिसंबर 2024",
-  },
-  {
-    title: "मन की शांति",
-    summary:
-      "मानसिक तनाव से मुक्ति पाने के उपाय। मन को शांत रखने की प्राचीन तकनीकें।",
-    excerpt: "मानसिक तनाव से मुक्ति पाने के प्रभावी उपाय...",
-    id: 6,
-    category: "मानसिक स्वास्थ्य",
-    readTime: "6 मिनट",
-    author: "मनोवैज्ञानिक",
-    date: "3 दिसंबर 2024",
-  },
-];
-
-const recentArticles = articles.slice(0, 3);
-
 export default function Blogs() {
+  const dispatch = useAppDispatch();
+  const { postsList, postsLoading, postsError } = useAppSelector(
+    (state) => state.auth
+  );
+  const [recentArticles, setRecentArticles] = useState([]);
+
+  // Fetch all posts when component mounts
+  useEffect(() => {
+    dispatch(fetchPosts({ limit: 100 })); // Fetch enough posts to display
+  }, [dispatch]);
+
+  // Update recent articles whenever postsList changes
+  useEffect(() => {
+    if (postsList && postsList.length > 0) {
+      // Sort posts by date (newest first) and take first 6
+      const sortedPosts = [...postsList].sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      );
+      setRecentArticles(sortedPosts.slice(0, 6));
+    }
+  }, [postsList]);
+
+  // Clear errors after 5 seconds
+  useEffect(() => {
+    if (postsError) {
+      const timer = setTimeout(() => {
+        dispatch(clearError());
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [postsError, dispatch]);
+
+  // Loading state
+  if (postsLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (postsError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center text-red-600">
+          <h1 className="text-2xl font-bold mb-4">त्रुटि</h1>
+          <p className="text-lg">{postsError}</p>
+          <button
+            onClick={() => dispatch(fetchPosts({ limit: 100 }))}
+            className="mt-4 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            पुनः प्रयास करें
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white">
       {/* Hero Section */}
@@ -146,32 +138,30 @@ export default function Blogs() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => {
-              return (
-                <Link key={index} href={`./${feature.slug}`}>
-                  <div className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-lg transition-all transform hover:scale-105 border border-gray-100 cursor-pointer group">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-blue-200 transition-colors">
-                      <feature.icon className="w-6 h-6 text-blue-600" />
-                    </div>
-                    <h3
-                      className="text-xl font-semibold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors"
-                      style={{
-                        fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
-                      }}
-                    >
-                      {feature.title}
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors">
-                      {feature.description}
-                    </p>
-                    <div className="mt-4 flex items-center text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="text-sm font-medium">और पढ़ें</span>
-                      <ArrowRight className="w-4 h-4 ml-1" />
-                    </div>
+            {features.map((feature, index) => (
+              <Link key={index} href={`./${feature.slug}`}>
+                <div className="bg-white p-8 rounded-2xl shadow-sm hover:shadow-lg transition-all transform hover:scale-105 border border-gray-100 cursor-pointer group">
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-blue-200 transition-colors">
+                    <feature.icon className="w-6 h-6 text-blue-600" />
                   </div>
-                </Link>
-              );
-            })}
+                  <h3
+                    className="text-xl font-semibold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors"
+                    style={{
+                      fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                    }}
+                  >
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors">
+                    {feature.description}
+                  </p>
+                  <div className="mt-4 flex items-center text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="text-sm font-medium">और पढ़ें</span>
+                    <ArrowRight className="w-4 h-4 ml-1" />
+                  </div>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -191,58 +181,76 @@ export default function Blogs() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {articles.map((article) => (
-              <div
-                key={article.id}
-                className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all border border-gray-100 overflow-hidden group"
-              >
-                <div className="h-48 bg-gradient-to-br from-blue-100 to-indigo-100 relative overflow-hidden">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-200/50 to-indigo-200/50 group-hover:from-blue-300/50 group-hover:to-indigo-300/50 transition-all"></div>
-                  <div className="absolute bottom-4 left-4">
-                    <span className="bg-white/90 text-blue-600 px-3 py-1 rounded-full text-sm font-medium">
-                      {article.category}
-                    </span>
+          {postsList.length === 0 ? (
+            <div className="text-center py-12">
+              <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                कोई लेख उपलब्ध नहीं है
+              </h3>
+              <p className="text-gray-600 mb-6">
+                वर्तमान में कोई लेख प्रकाशित नहीं किए गए हैं।
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {postsList.map((article) => (
+                <div
+                  key={article.id}
+                  className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all border border-gray-100 overflow-hidden group"
+                >
+                  <div className="h-48 bg-gradient-to-br from-blue-100 to-indigo-100 relative overflow-hidden">
+                    <img
+                      src={article.image || "/placeholder.svg"}
+                      alt={article.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute bottom-4 left-4">
+                      <span className="bg-white/90 text-blue-600 px-3 py-1 rounded-full text-sm font-medium">
+                        {article.category}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center space-x-4 mb-3 text-sm text-gray-500">
+                      <div className="flex items-center space-x-1">
+                        <User className="w-4 h-4" />
+                        <span>{article.author}</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="w-4 h-4" />
+                        <span>
+                          {new Date(article.date).toLocaleDateString("hi-IN")}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Clock className="w-4 h-4" />
+                        <span>{article.readTime}</span>
+                      </div>
+                    </div>
+                    <h3
+                      className="text-xl font-semibold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors"
+                      style={{
+                        fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                      }}
+                    >
+                      {article.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4 leading-relaxed">
+                      {article.summary}
+                    </p>
+                    <Link
+                      href={`/blog/blog_detail?id=${article.id}&category=${article.category}`}
+                    >
+                      <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-1 transition-colors group">
+                        <span>पूरा पढ़ें</span>
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </button>
+                    </Link>
                   </div>
                 </div>
-                <div className="p-6">
-                  <div className="flex items-center space-x-4 mb-3 text-sm text-gray-500">
-                    <div className="flex items-center space-x-1">
-                      <User className="w-4 h-4" />
-                      <span>{article.author}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>{article.date}</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Clock className="w-4 h-4" />
-                      <span>{article.readTime}</span>
-                    </div>
-                  </div>
-                  <h3
-                    className="text-xl font-semibold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors"
-                    style={{
-                      fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
-                    }}
-                  >
-                    {article.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4 leading-relaxed">
-                    {article.summary}
-                  </p>
-                  <Link
-                    href={`/blog/blog_detail?id=${article.id}&category=general`}
-                  >
-                    <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-1 transition-colors group">
-                      <span>पूरा पढ़ें</span>
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -261,45 +269,63 @@ export default function Blogs() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {recentArticles.map((article, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all border border-gray-100 overflow-hidden"
-              >
-                <div className="h-48 bg-gradient-to-br from-blue-100 to-indigo-100"></div>
-                <div className="p-6">
-                  <div className="flex items-center space-x-2 mb-3">
-                    <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm font-medium">
-                      {article.category}
-                    </span>
-                    <span className="text-gray-500 text-sm">
-                      {article.readTime}
-                    </span>
+          {recentArticles.length === 0 ? (
+            <div className="text-center py-12">
+              <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                कोई हालिया लेख उपलब्ध नहीं है
+              </h3>
+              <p className="text-gray-600 mb-6">
+                वर्तमान में कोई नए लेख प्रकाशित नहीं किए गए हैं।
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+              {recentArticles.map((article) => (
+                <div
+                  key={article.id}
+                  className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all border border-gray-100 overflow-hidden"
+                >
+                  <div className="h-48 bg-gradient-to-br from-blue-100 to-indigo-100 relative overflow-hidden">
+                    <img
+                      src={article.image || "/placeholder.svg"}
+                      alt={article.title}
+                      className="w-full h-full object-cover"
+                    />
                   </div>
-                  <h3
-                    className="text-xl font-semibold text-gray-800 mb-3"
-                    style={{
-                      fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
-                    }}
-                  >
-                    {article.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4 leading-relaxed">
-                    {article.excerpt}
-                  </p>
-                  <Link
-                    href={`/blog/blog_detail?id=${article.id}&category=general`}
-                  >
-                    <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-1 transition-colors">
-                      <span>पूरा पढ़ें</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  </Link>
+                  <div className="p-6">
+                    <div className="flex items-center space-x-2 mb-3">
+                      <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm font-medium">
+                        {article.category}
+                      </span>
+                      <span className="text-gray-500 text-sm">
+                        {article.readTime}
+                      </span>
+                    </div>
+                    <h3
+                      className="text-xl font-semibold text-gray-800 mb-3"
+                      style={{
+                        fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                      }}
+                    >
+                      {article.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4 leading-relaxed">
+                      {article.excerpt || article.summary}
+                    </p>
+                    <Link
+                      href={`/blog/blog_detail?id=${article.id}&category=${article.category}`}
+                    >
+                      <button className="text-blue-600 hover:text-blue-700 font-medium flex items-center space-x-1 transition-colors">
+                        <span>पूरा पढ़ें</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           <div className="text-center">
             <Link href="/comments">

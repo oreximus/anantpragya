@@ -30,7 +30,7 @@ export default function CreatePost() {
     content: "",
     category: "",
     tags: [],
-    featuredImage: null,
+    featured_image: null,
     status: "draft", // draft, published
   });
   const [newTag, setNewTag] = useState("");
@@ -76,7 +76,7 @@ export default function CreatePost() {
     if (file) {
       setFormData((prev) => ({
         ...prev,
-        featuredImage: file,
+        featured_image: file,
       }));
 
       // Create preview
@@ -91,7 +91,7 @@ export default function CreatePost() {
   const removeImage = () => {
     setFormData((prev) => ({
       ...prev,
-      featuredImage: null,
+      featured_image: null,
     }));
     setImagePreview(null);
   };
@@ -128,8 +128,8 @@ export default function CreatePost() {
     formDataToSend.append("content", formData.content);
     formDataToSend.append("category", formData.category);
     formData.tags.forEach((tag) => formDataToSend.append("tags[]", tag)); // Append tags as an array
-    if (formData.featuredImage) {
-      formDataToSend.append("featuredImage", formData.featuredImage);
+    if (formData.featured_image) {
+      formDataToSend.append("featured_image", formData.featured_image);
     }
     formDataToSend.append("status", currentStatus); // Use currentStatus
 

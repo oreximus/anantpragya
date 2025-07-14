@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create axios instance
 const api = axios.create({
-  baseURL: "http://localhost:3002/api",
+  baseURL: "https://dev.anantpragya.com/api",
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -21,7 +21,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  },
+  }
 );
 
 // Response interceptor to handle errors
@@ -50,7 +50,7 @@ api.interceptors.response.use(
 
     // Handle other errors
     return Promise.reject(error);
-  },
+  }
 );
 
 export default api;

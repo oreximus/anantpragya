@@ -553,9 +553,41 @@ const authSlice = createSlice({
       .addCase(fetchPosts.rejected, (state, action) => {
         state.postsLoading = false;
         state.postsError = action.payload?.message || "Failed to fetch posts";
+      })
+      // Delete Post
+      .addCase(deletePost.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(deletePost.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.postsList = state.postsList.filter(
+          (post) => post.id !== action.payload.postId
+        );
+        state.postsTotal = state.postsTotal - 1;
+        state.message = action.payload.message;
+      })
+      .addCase(deletePost.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload?.message || "Post deletion failed";
       });
   },
 });
+
+// Add this to authSlice.js (in the createAsyncThunk section)
+export const deletePost = createAsyncThunk(
+  "auth/deletePost",
+  async (postId, { rejectWithValue }) => {
+    try {
+      const response = await authAPI.deletePost(postId);
+      return { postId, message: response.data.message };
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data || { message: "Post deletion failed" }
+      );
+    }
+  }
+);
 
 export const { clearError, clearMessage, logout, setUser, deleteUserSuccess } =
   authSlice.actions;

@@ -87,3 +87,9 @@ export const createPost = async (postData) => {
 export const getPosts = async (params) => {
   return await api.get("/post/list", { params });
 };
+
+export const deletePost = async (postId) => {
+  return await api.delete("/post/delete", {
+    data: { id: postId },
+  });
+};

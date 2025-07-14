@@ -23,6 +23,7 @@ import { useAppSelector, useAppDispatch } from "../../lib/hooks/redux";
 import {
   fetchCategories, // Import fetchCategories
   fetchPosts, // Import fetchPosts
+  deletePost, // Import deletePost
   clearError,
   clearMessage,
 } from "../../lib/features/auth/authSlice";
@@ -200,15 +201,17 @@ export default function GetAllBlogs() {
     setActiveDropdown(null);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (blogToDelete) {
-      // In a real app, dispatch an action to delete the blog via API
-      // For now, simulate deletion from the Redux state (if postsList was mutable)
-      // After actual deletion, you would re-fetch the posts:
-      console.log(`Simulating deletion of blog with ID: ${blogToDelete.id}`);
-      setShowDeleteModal(false);
-      setBlogToDelete(null);
-      fetchPostsWithFilters(); // Re-fetch posts after deletion
+      try {
+        await dispatch(deletePost(blogToDelete.id)).unwrap();
+        setShowDeleteModal(false);
+        setBlogToDelete(null);
+        // No need to manually refetch as the reducer updates the state
+      } catch (error) {
+        console.error("Failed to delete post:", error);
+        // Error is already handled by the slice
+      }
     }
   };
 
