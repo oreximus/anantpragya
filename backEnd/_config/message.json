@@ -1,0 +1,47 @@
+{
+  "user": {
+    "add": "User created successfully.",
+    "edit": "User updated successfully.",
+    "delete": "User deleted successfully.",
+    "status": "User status updated successfully.",
+    "fetch": "User data fetch successfully.",
+    "profileImg": "User profile image uploaded successfully.",
+    "changePassword": "User password changed successfully.",
+    "updateProfile": "Profile updated successfully.",
+    "register": "User registered successfully.",
+    "login": "Login successful.",
+    "profile": "Profile fetched successfully.",
+    "update": "Profile updated successfully.",
+    "forgotPassword": "Password reset instructions sent to your email.",
+    "resetPassword": "Password reset successfully.",
+    "list": "Users fetched successfully.",
+    "emailVerified": "Email verified successfully."
+  },
+  "file": {
+    "add": "File uploaded successfully.",
+    "edit": "File updated successfully.",
+    "delete": "File deleted successfully.",
+    "fetch": "File data fetch successfully.",
+    "uploadFile": "Files required!"
+  },
+  "master": {
+    "fetch": "Status data fetch successfully."
+  },
+  "post": {
+    "create": "Post created successfully.",
+    "update": "Post updated successfully.",
+    "delete": "Post deleted successfully.",
+    "fetch": "Post fetched successfully.",
+    "list": "Posts fetched successfully.",
+    "like": "Post liked/unliked successfully.",
+    "comment": "Comment added successfully.",
+    "comments": "Comments fetched successfully.",
+    "likeCount": "Post like count fetched successfully."
+  },
+  "category": {
+    "fetch": "Categories fetched successfully.",
+    "create": "Category created successfully.",
+    "update": "Category updated successfully.",
+    "delete": "Category deleted successfully."
+  }
+}

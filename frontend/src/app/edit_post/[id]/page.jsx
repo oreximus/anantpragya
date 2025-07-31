@@ -1,0 +1,612 @@
+"use client";
+import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
+import Link from "next/link";
+import {
+  ArrowLeft,
+  Save,
+  Eye,
+  ImageIcon,
+  Type,
+  Tag,
+  Calendar,
+  User,
+  Upload,
+  X,
+  Plus,
+} from "lucide-react";
+import { useAppSelector, useAppDispatch } from "../../../lib/hooks/redux";
+import {
+  fetchCategories,
+  fetchPostById,
+  updatePost,
+  clearError,
+  clearMessage,
+} from "../../../lib/features/auth/authSlice";
+
+export default function EditPostPage() {
+  const router = useRouter();
+  const params = useParams();
+  const postId = params.id;
+
+  const dispatch = useAppDispatch();
+  const {
+    isAuthenticated,
+    user,
+    categoriesList,
+    categoriesLoading,
+    categoriesError,
+    currentPost,
+    currentPostLoading,
+    currentPostError,
+    postCreationLoading, // Reusing this for update loading
+    error,
+    message,
+  } = useAppSelector((state) => state.auth);
+
+  const [formData, setFormData] = useState({
+    id: "",
+    title: "",
+    summary: "",
+    content: "",
+    category: "",
+    tags: [],
+    featured_image: null, // This will be a File object if new image is selected, or "REMOVE_IMAGE" string
+    status: "draft",
+  });
+  const [newTag, setNewTag] = useState("");
+  const [isPreview, setIsPreview] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null); // For displaying image preview (URL or Data URL)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [initialImageLoaded, setInitialImageLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
+    }
+    dispatch(clearError());
+    dispatch(clearMessage());
+    dispatch(fetchCategories());
+    if (postId) {
+      dispatch(fetchPostById(postId));
+    }
+  }, [isAuthenticated, router, dispatch, postId]);
+
+  useEffect(() => {
+    if (currentPost && postId === currentPost.id && !initialImageLoaded) {
+      setFormData({
+        id: currentPost.id,
+        title: currentPost.title,
+        summary: currentPost.summary,
+        content: currentPost.content,
+        category: currentPost.category,
+        tags: currentPost.tags || [],
+        featured_image: null, // No file initially, only if user uploads new one
+        status: currentPost.status,
+      });
+      if (
+        currentPost.image &&
+        currentPost.image !== "/placeholder.svg?height=200&width=300"
+      ) {
+        setImagePreview(currentPost.image);
+      } else {
+        setImagePreview(null);
+      }
+      setInitialImageLoaded(true);
+    }
+  }, [currentPost, postId, initialImageLoaded]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        featured_image: file,
+      }));
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setFormData((prev) => ({
+      ...prev,
+      featured_image: "REMOVE_IMAGE", // Special value to indicate removal
+    }));
+    setImagePreview(null);
+  };
+
+  const addTag = () => {
+    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
+      setFormData((prev) => ({
+        ...prev,
+        tags: [...prev.tags, newTag.trim()],
+      }));
+      setNewTag("");
+    }
+  };
+
+  const removeTag = (tagToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
+    }));
+  };
+
+  const handleSubmit = async (e, statusOverride = null) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    dispatch(clearError());
+    dispatch(clearMessage());
+
+    const currentStatus = statusOverride || formData.status;
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("id", formData.id);
+    formDataToSend.append("title", formData.title);
+    formDataToSend.append("summary", formData.summary);
+    formDataToSend.append("content", formData.content);
+    formDataToSend.append("category", formData.category);
+    formData.tags.forEach((tag) => formDataToSend.append("tags[]", tag));
+
+    if (formData.featured_image instanceof File) {
+      formDataToSend.append("featured_image", formData.featured_image);
+    } else if (formData.featured_image === "REMOVE_IMAGE") {
+      formDataToSend.append("remove_featured_image", "true");
+    }
+    // If formData.featured_image is null, it means no change to the image, so don't append it.
+
+    formDataToSend.append("status", currentStatus);
+
+    try {
+      await dispatch(updatePost(formDataToSend)).unwrap();
+      alert("लेख सफलतापूर्वक अपडेट किया गया!");
+      router.push("/blogs");
+    } catch (err) {
+      console.error("Error updating post:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSaveDraft = (e) => {
+    handleSubmit(e, "draft");
+  };
+
+  const handlePublish = (e) => {
+    handleSubmit(e, "published");
+  };
+
+  if (!isAuthenticated || categoriesLoading || currentPostLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (currentPostError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-600">
+        <p>Error loading post: {currentPostError}</p>
+      </div>
+    );
+  }
+
+  if (!currentPost && !currentPostLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-600">
+        <p>Post not found.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <Link
+            href="/blogs"
+            className="inline-flex items-center space-x-2 text-gray-600 hover:text-blue-600 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm font-medium">वापस जाएं</span>
+          </Link>
+
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setIsPreview(!isPreview)}
+              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <Eye className="w-4 h-4" />
+              <span>{isPreview ? "संपादन" : "पूर्वावलोकन"}</span>
+            </button>
+          </div>
+        </div>
+
+        {!isPreview ? (
+          /* Create/Edit Form */
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            {/* Form Header */}
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 border-b border-gray-100">
+              <h1
+                className="text-2xl font-bold text-gray-800"
+                style={{
+                  fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                }}
+              >
+                लेख संपादित करें
+              </h1>
+              <p className="text-gray-600 mt-2">
+                अपने लेख में बदलाव करें और अपडेट करें
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-600 text-sm">{error}</p>
+                </div>
+              )}
+
+              {/* Success Message */}
+              {message && (
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-600 text-sm">{message}</p>
+                </div>
+              )}
+
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  शीर्षक *
+                </label>
+                <div className="relative">
+                  <Type className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-black"
+                    placeholder="लेख का शीर्षक दर्ज करें"
+                    style={{
+                      fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                    }}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  सारांश *
+                </label>
+                <textarea
+                  name="summary"
+                  value={formData.summary}
+                  onChange={handleInputChange}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none text-black"
+                  placeholder="लेख का संक्षिप्त सारांश लिखें (2-3 वाक्य)"
+                  style={{
+                    fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                  }}
+                  required
+                />
+              </div>
+
+              {/* Category and Tags Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Category */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    श्रेणी *
+                  </label>
+                  <div className="relative">
+                    <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <select
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-black"
+                      required
+                    >
+                      <option value="">श्रेणी चुनें</option>
+                      {categoriesList.map((category) => (
+                        <option key={category.id} value={category.name}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {categoriesError && (
+                    <p className="text-red-600 text-xs mt-1">
+                      श्रेणियां लोड करने में त्रुटि: {categoriesError}
+                    </p>
+                  )}
+                </div>
+
+                {/* Tags */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    टैग्स
+                  </label>
+                  <div className="flex space-x-2">
+                    <input
+                      type="text"
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && (e.preventDefault(), addTag())
+                      }
+                      className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-black"
+                      placeholder="टैग जोड़ें"
+                    />
+                    <button
+                      type="button"
+                      onClick={addTag}
+                      className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                  {formData.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {formData.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center space-x-1 bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                        >
+                          <span>{tag}</span>
+                          <button
+                            type="button"
+                            onClick={() => removeTag(tag)}
+                            className="hover:text-blue-600"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Featured Image */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  मुख्य चित्र
+                </label>
+                {!imagePreview ? (
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                    <ImageIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-4">
+                      चित्र अपलोड करने के लिए क्लिक करें या खींचकर छोड़ें
+                    </p>
+                    <label className="inline-flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
+                      <Upload className="w-4 h-4" />
+                      <span>चित्र चुनें</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <img
+                      src={imagePreview || "/placeholder.svg"}
+                      alt="Preview"
+                      className="w-full h-64 object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full hover:bg-red-700 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Content */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  मुख्य सामग्री *
+                </label>
+                <textarea
+                  name="content"
+                  value={formData.content}
+                  onChange={handleInputChange}
+                  rows={15}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none text-black"
+                  placeholder="अपना लेख यहाँ लिखें..."
+                  style={{
+                    fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                  }}
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-2">
+                  न्यूनतम 500 शब्द लिखें। अपने विचारों को स्पष्ट और प्रेरणादायक
+                  तरीके से व्यक्त करें।
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={handleSaveDraft}
+                  disabled={isSubmitting}
+                  className="flex-1 flex items-center justify-center space-x-2 bg-gray-600 text-white py-3 rounded-lg font-medium hover:bg-gray-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Save className="w-5 h-5" />
+                  <span>ड्राफ्ट सहेजें</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePublish}
+                  disabled={
+                    isSubmitting ||
+                    !formData.title ||
+                    !formData.content ||
+                    !formData.category
+                  }
+                  className="flex-1 flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      <span>अपडेट हो रहा है...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-5 h-5" />
+                      <span>प्रकाशित करें</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          /* Preview */
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            {/* Preview Header */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 border-b border-gray-100">
+              <h2
+                className="text-2xl font-bold text-gray-800"
+                style={{
+                  fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                }}
+              >
+                पूर्वावलोकन
+              </h2>
+              <p className="text-gray-600 mt-2">
+                आपका लेख कैसा दिखेगा इसका पूर्वावलोकन
+              </p>
+            </div>
+
+            <div className="p-6">
+              {/* Preview Content */}
+              <div className="max-w-4xl mx-auto">
+                {/* Category Badge */}
+                {formData.category && (
+                  <div className="mb-4">
+                    <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm font-medium">
+                      {
+                        categoriesList.find(
+                          (cat) => cat.name === formData.category
+                        )?.name
+                      }
+                    </span>
+                  </div>
+                )}
+
+                {/* Title */}
+                <h1
+                  className="text-3xl md:text-4xl font-bold text-gray-800 mb-4"
+                  style={{
+                    fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                  }}
+                >
+                  {formData.title || "लेख का शीर्षक"}
+                </h1>
+
+                {/* Meta Info */}
+                <div className="flex items-center space-x-6 text-sm text-gray-500 mb-6">
+                  <div className="flex items-center space-x-1">
+                    <User className="w-4 h-4" />
+                    <span>
+                      {user?.first_name} {user?.last_name}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <Calendar className="w-4 h-4" />
+                    <span>{new Date().toLocaleDateString("hi-IN")}</span>
+                  </div>
+                </div>
+
+                {/* Featured Image */}
+                {imagePreview && (
+                  <div className="rounded-2xl overflow-hidden shadow-lg mb-8">
+                    <img
+                      src={imagePreview || "/placeholder.svg"}
+                      alt={formData.title}
+                      className="w-full h-64 md:h-96 object-cover"
+                    />
+                  </div>
+                )}
+
+                {/* Summary */}
+                {formData.summary && (
+                  <div className="bg-blue-50 border-l-4 border-blue-600 p-4 mb-8">
+                    <p
+                      className="text-lg text-gray-700 leading-relaxed"
+                      style={{
+                        fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                      }}
+                    >
+                      {formData.summary}
+                    </p>
+                  </div>
+                )}
+
+                {/* Content */}
+                <div className="prose prose-lg max-w-none">
+                  <div
+                    className="text-gray-700 leading-relaxed text-lg whitespace-pre-line"
+                    style={{
+                      fontFamily: "Noto Sans Devanagari, Arial, sans-serif",
+                    }}
+                  >
+                    {formData.content || "लेख की मुख्य सामग्री यहाँ दिखेगी..."}
+                  </div>
+                </div>
+
+                {/* Tags */}
+                {formData.tags.length > 0 && (
+                  <div className="mt-8 pt-6 border-t border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">
+                      टैग्स:
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      {formData.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
