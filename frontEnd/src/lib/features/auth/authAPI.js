@@ -40,7 +40,7 @@ export const forgotPassword = async (email) => {
 export const resetPassword = async (resetData) => {
   return await api.post("/auth/reset-password", {
     email: resetData.email,
-    reset_token: resetData.resetToken,
+    otp: resetData.resetToken,
     new_password: resetData.newPassword,
     confirm_password: resetData.confirmPassword,
   });

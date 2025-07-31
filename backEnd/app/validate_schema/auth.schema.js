@@ -14,7 +14,7 @@ module.exports = {
   changePassword,
   forgotPassword,
   resetPassword,
-  verifyEmailOtp, // Add this line
+  verifyEmailOtp,
 };
 
 // User Registration Schema
@@ -106,7 +106,15 @@ function resetPassword(req, res, next) {
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!.@#$%^&*])(?=.{6,})/;
   const schema = Joi.object().keys({
     email: Joi.string().email().required(),
-    reset_token: Joi.string().required(),
+    // Changed from reset_token to otp
+    otp: Joi.string()
+      .length(6)
+      .pattern(/^[0-9]+$/)
+      .required()
+      .messages({
+        "string.pattern.base": "OTP must be a 6-digit number.",
+        "string.length": "OTP must be 6 digits long.",
+      }),
     new_password: Joi.string()
       .pattern(PASSWORD_REGEX)
       .trim(true)

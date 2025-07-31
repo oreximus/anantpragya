@@ -44,8 +44,18 @@ export default function SignUp() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const passwordRegex =
+      /^(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+
+    if (!passwordRegex.test(formData.password)) {
+      alert(
+        "पासवर्ड कम से कम 8 वर्ण लंबा होना चाहिए, इसमें एक विशेष वर्ण और एक संख्या (0-9) शामिल होनी चाहिए।"
+      );
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
-      alert("पासवर्ड मेल नहीं खाते");
+      alert("पासवर्ड और पुष्टि पासवर्ड मेल नहीं खाते");
       return;
     }
 

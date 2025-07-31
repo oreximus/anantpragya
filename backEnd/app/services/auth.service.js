@@ -43,7 +43,7 @@ async function userRegister(params) {
       common.curDateTime(),
       15,
       "minutes",
-      "YYYY-MM-DD HH:mm:ss",
+      "YYYY-MM-DD HH:mm:ss"
     ); // OTP valid for 15 minutes
 
     // Create new user
@@ -71,7 +71,7 @@ async function userRegister(params) {
         first_name: savedUser.first_name,
         otp: otp,
         otp_expiry_minutes: 15,
-      },
+      }
     );
 
     const output = {
@@ -130,7 +130,7 @@ async function userLogin(params) {
 
     const isPasswordValid = await securePwd.comparePassword(
       params.password,
-      user.password,
+      user.password
     );
 
     if (!isPasswordValid) {
@@ -150,7 +150,7 @@ async function userLogin(params) {
     // Update access token
     await db.User.update(
       { access_token: token, updated_at: common.curDateTime() },
-      { where: { id: user.id } },
+      { where: { id: user.id } }
     );
 
     const output = {
@@ -294,37 +294,34 @@ async function forgotPassword(params) {
       throw "User with this email does not exist!";
     }
 
-    // Generate reset token and expiry
-    const resetToken = common.generateRandomString(32);
-    const resetTokenExpiresAt = common.addTime(
+    // Generate OTP for password reset
+    const otp = common.generateNumericOTP(6);
+    const otpExpiresAt = common.addTime(
       common.curDateTime(),
-      30,
+      15, // OTP valid for 15 minutes
       "minutes",
-      "YYYY-MM-DD HH:mm:ss",
-    ); // Link valid for 30 minutes
-
-    // Save reset token and expiry to user record
-    user.reset_password_token = resetToken;
-    user.reset_password_expires_at = resetTokenExpiresAt;
-    await user.save();
-
-    // Construct reset link
-    const resetLink = `${process.env.BASE_URL}/reset-password?token=${resetToken}&email=${user.email}`;
-
-    // Send forgot password email
-    await common.sendMail(
-      "Password Reset",
-      [user.email],
-      "Password Reset Request",
-      "forgot-password-link",
-      {
-        first_name: user.first_name,
-        reset_link: resetLink,
-        link_expiry_minutes: 30,
-      },
+      "YYYY-MM-DD HH:mm:ss"
     );
 
-    return { message: "Password reset instructions sent to your email" };
+    // Save OTP and expiry to user record in the reset_password_token field
+    user.reset_password_token = otp;
+    user.reset_password_expires_at = otpExpiresAt;
+    await user.save();
+
+    // Send OTP email using the email-verification-otp template
+    await common.sendMail(
+      "Password Reset OTP",
+      [user.email],
+      "Your Password Reset OTP",
+      "email-verification-otp", // Reusing the email-verification-otp template
+      {
+        first_name: user.first_name,
+        otp: otp,
+        otp_expiry_minutes: 15,
+      }
+    );
+
+    return { message: "Password reset OTP sent to your email" };
   } catch (err) {
     console.log(err);
     throw catchError(err);
@@ -337,27 +334,28 @@ async function resetPassword(params) {
     const user = await db.User.scope("withHash").findOne({
       where: {
         email: params.email,
-        reset_password_token: params.reset_token,
+        // Changed from reset_token to otp
+        reset_password_token: params.otp,
         is_deleted: 0,
         is_active: 1,
       },
     });
 
     if (!user) {
-      throw "Invalid reset token or user not found!";
+      throw "Invalid OTP or email!";
     }
 
-    // Check if token has expired
+    // Check if OTP has expired
     const now = new Date();
-    const tokenExpiry = new Date(user.reset_password_expires_at);
-    if (now > tokenExpiry) {
-      throw "Password reset token has expired!";
+    const otpExpiry = new Date(user.reset_password_expires_at);
+    if (now > otpExpiry) {
+      throw "Password reset OTP has expired! Please request a new one.";
     }
 
     // Hash new password
     const hashedPassword = await securePwd.securePassword(params.new_password);
 
-    // Update password and clear reset token fields
+    // Update password and clear OTP fields
     user.password = hashedPassword;
     user.reset_password_token = null;
     user.reset_password_expires_at = null;
@@ -373,7 +371,7 @@ async function resetPassword(params) {
       "password-reset-confirmation",
       {
         first_name: user.first_name,
-      },
+      }
     );
 
     return { message: "Password reset successfully" };
@@ -425,7 +423,7 @@ async function verifyEmailOtp(params) {
     // Update access token
     await db.User.update(
       { access_token: token, updated_at: common.curDateTime() },
-      { where: { id: user.id } },
+      { where: { id: user.id } }
     );
 
     const output = {
