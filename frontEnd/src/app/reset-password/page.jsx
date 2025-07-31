@@ -141,7 +141,7 @@ function ResetPasswordContent() {
             {/* OTP Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                रीसेट टोकन
+                सत्यापन कोड
               </label>
               <input
                 type="text"
@@ -149,7 +149,7 @@ function ResetPasswordContent() {
                 value={formData.resetToken}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-center text-lg font-mono tracking-widest"
-                placeholder="रीसेट टोकन दर्ज करें"
+                placeholder="6 अंकों का कोड दर्ज करें"
                 maxLength={6}
                 required
               />
