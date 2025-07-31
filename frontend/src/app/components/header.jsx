@@ -361,21 +361,23 @@ export default function Header({ isMenuOpen, setIsMenuOpen }) {
                   href={item.href}
                   onClick={() => handleNavItemClick(item.name)}
                   className={`
-                  relative px-6 py-3 text-white text-sm font-medium whitespace-nowrap
-                  transition-[transform,background-color] duration-300 ease-in-out
-                  transform hover:scale-105 active:scale-95 group
-                  hover:bg-white/10
-                  ${index !== navigationItems.length - 1 ? "border-r border-blue-500/30" : ""}
-                  ${isActiveRoute(item.href) ? "bg-white/20 shadow-inner" : ""}
-                  ${activeNavItem === item.name ? "bg-white/30 scale-105" : ""}
-                `}
+    relative px-6 py-3 text-white text-sm font-medium whitespace-nowrap
+    transition-all duration-200 ease-in-out
+    hover:bg-white/20 hover:shadow-lg
+    ${index !== navigationItems.length - 1 ? "border-r border-blue-500/30" : ""}
+    ${isActiveRoute(item.href) ? "bg-white/20 shadow-inner" : ""}
+    ${activeNavItem === item.name ? "bg-white/30" : ""}
+  `}
                 >
                   <span className="relative z-10">{item.name}</span>
 
                   {/* Active indicator */}
                   {isActiveRoute(item.href) && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-t-full animate-in slide-in-from-bottom-1 duration-300"></div>
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-t-full"></div>
                   )}
+
+                  {/* Hover effect */}
+                  <div className="absolute inset-0 bg-white/10 opacity-0 hover:opacity-100 transition-opacity duration-200 rounded"></div>
                 </Link>
               ))}
             </div>
@@ -409,8 +411,9 @@ export default function Header({ isMenuOpen, setIsMenuOpen }) {
       {/* Overlay for side menu */}
       {isMenuOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ease-in-out"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-all duration-300 ease-in-out"
           onClick={closeMenu}
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.5)" }}
         />
       )}
     </>

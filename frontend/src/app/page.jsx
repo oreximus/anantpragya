@@ -15,7 +15,7 @@ export default function Home() {
     {
       name: "YouTube",
       icon: Youtube,
-      url: "https://www.youtube.com/@BrahmendraGupta",
+      url: "https://www.youtube.com/@ceobrahmendragupta",
     },
     {
       name: "Facebook",
