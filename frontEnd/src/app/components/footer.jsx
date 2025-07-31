@@ -9,6 +9,7 @@ import {
   Phone,
   MapPin,
 } from "lucide-react";
+import { PiTelegramLogo } from "react-icons/pi";
 import AnantpragyaLogo from "../../../public/logo_4.png"; // Adjust the path as per your project structure
 
 export default function Footer() {
@@ -54,10 +55,16 @@ export default function Footer() {
                 <Instagram className="w-4 h-4 text-blue-600" />
               </a>
               <a
-                href="https://www.youtube.com/@BrahmendraGupta"
+                href="https://www.youtube.com/BrahmendraGupta"
                 className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors"
               >
                 <Youtube className="w-4 h-4 text-blue-600" />
+              </a>
+              <a
+                href="https://t.me/BrahmendraGupta"
+                className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center hover:bg-blue-200 transition-colors"
+              >
+                <PiTelegramLogo className="w-4 h-4 text-blue-600" />
               </a>
             </div>
           </div>
@@ -109,34 +116,34 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="#"
+                  href="/common?categoryId=650e8400-e29b-41d4-a716-446655440010"
                   className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
                 >
-                  आध्यात्म
+                  कठिन परिश्रम
                 </Link>
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/common?categoryId=650e8400-e29b-41d4-a716-446655440007"
                   className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
                 >
-                  ध्यान
+                  प्रेरणादायक
                 </Link>
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/common?categoryId=650e8400-e29b-41d4-a716-446655440009"
                   className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
                 >
-                  योग
+                  मार्गदर्शन
                 </Link>
               </li>
               <li>
                 <Link
-                  href="#"
+                  href="/common?categoryId=650e8400-e29b-41d4-a716-446655440008"
                   className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
                 >
-                  जीवन शैली
+                  विश्वास
                 </Link>
               </li>
             </ul>
@@ -163,7 +170,9 @@ export default function Footer() {
               </div>
               <div className="flex items-start space-x-3">
                 <MapPin className="w-4 h-4 text-blue-600 mt-0.5" />
-                <span className="text-gray-600 text-sm">दतिया मध्य प्रदेश</span>
+                <span className="text-gray-600 text-sm">
+                  ग्वालियर मध्य प्रदेश
+                </span>
               </div>
             </div>
           </div>

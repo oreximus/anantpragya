@@ -174,7 +174,9 @@ export default function Header({ isMenuOpen, setIsMenuOpen }) {
               aria-label="Toggle menu"
             >
               <div
-                className={`transition-transform duration-300 ${isMenuOpen ? "rotate-90" : ""}`}
+                className={`transition-transform duration-300 ${
+                  isMenuOpen ? "rotate-90" : ""
+                }`}
               >
                 {isMenuOpen ? (
                   <X className="w-5 h-5" />
@@ -185,13 +187,13 @@ export default function Header({ isMenuOpen, setIsMenuOpen }) {
             </button>
 
             {/* Search Button (always visible) */}
-            <button
+            {/* <button
               onClick={toggleSearch}
               className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 text-gray-700"
               aria-label="Search"
             >
               <Search className="w-5 h-5" />
-            </button>
+            </button> */}
           </div>
 
           {/* Center - Logo */}
@@ -389,7 +391,7 @@ export default function Header({ isMenuOpen, setIsMenuOpen }) {
       {sideMenuContainer &&
         createPortal(
           <SideMenu isMenuOpen={isMenuOpen} closeMenu={closeMenu} />,
-          sideMenuContainer,
+          sideMenuContainer
         )}
 
       {/* Overlay for user menu (desktop) */}

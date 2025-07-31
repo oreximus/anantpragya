@@ -8,6 +8,7 @@ import {
   Instagram,
   Youtube,
 } from "lucide-react";
+import { PiTelegramLogo } from "react-icons/pi";
 import logoAnant from "../../public/logo_4.png"; // Adjust the path as per your project structure
 
 export default function Home() {
@@ -31,6 +32,11 @@ export default function Home() {
       name: "Instagram",
       icon: Instagram,
       url: "https://www.instagram.com/brahmendraguptain?igsh=MXB6MHFwYmNrc2RuOA==",
+    },
+    {
+      name: "Telegram",
+      icon: PiTelegramLogo,
+      url: "https://t.me/BrahmendraGupta",
     },
   ];
 

@@ -92,6 +92,16 @@ export default function Profile() {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
 
+    const passwordRegex =
+      /^(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+
+    if (!passwordRegex.test(passwordData.newPassword)) {
+      alert(
+        "नया पासवर्ड कम से कम 8 वर्ण लंबा होना चाहिए, इसमें एक विशेष वर्ण और एक संख्या (0-9) शामिल होनी चाहिए।"
+      );
+      return;
+    }
+
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert("नया पासवर्ड और पुष्टि पासवर्ड मेल नहीं खाते");
       return;
